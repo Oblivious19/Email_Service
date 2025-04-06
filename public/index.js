@@ -458,6 +458,9 @@ document.addEventListener("DOMContentLoaded", function() {
                 return false;
             }
 
+            const form = document.getElementById('emailForm');
+            const formData = new FormData(form);
+
             console.log('Handling submit', {
                 to: formData.get('to'),
                 subject: formData.get('subject'),
@@ -467,7 +470,7 @@ document.addEventListener("DOMContentLoaded", function() {
             isSubmitting = true;
             toggleSendButton();
             
-            window.submitForm(event)
+            window.submitForm(form)
                 .catch(error => console.error('Form submission error:', error))
                 .finally(() => {
                     console.log('Submission complete');
