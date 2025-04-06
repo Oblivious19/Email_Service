@@ -1,101 +1,497 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Managed Email Service</title>
-  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
-<style>
-  
-</style>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Managed Email Service</title>
+    <link
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+    <style>
+      @media (max-width: 576px) {
+        .container {
+          padding-left: 10px;
+          padding-right: 10px;
+        }
 
+        .btn {
+          padding: 0.375rem 0.5rem;
+        }
+
+        .tag {
+          margin-bottom: 5px;
+        }
+
+        .code-editor {
+          min-height: 150px;
+        }
+      }
+    </style>
   </head>
-<body class="container mt-5">
- 
-    <h1 class=" fw-bold text-center ">
-        Managed Email Service
-    </h1>
-    <div class="rounded p-3 mb-2 bg- text-white ">
-   <form id="emailForm" action="/submit"  method="POST" style="background-color: white;">
-   
-
-    <div class="form-group">
-      <input type="checkbox" id="ReplyTo">
-      <label for="ReplyTo" class="text-dark"><h5>Add Reply To</h5></label><br>
-      <div id="replyToSection" style="display: none;">
-        <label for="ReplyToInput" class="text-dark"><h6>Reply To</h6></label>
-        <input type="email" class="form-control" id="ReplyToInput" placeholder="Use Commas to separate multiple emails">
+  <body class="container mt-5">
+    <div class="page-header">
+      <div class="row align-items-center">
+        <div class="col-md-8">
+          <h1 class="mb-2 fw-bold">Email Composer</h1>
+          <p class="mb-0 opacity-75">
+            Create and send professional emails easily
+          </p>
+          <div class="mt-3">
+            <span class="tag tag-primary"
+              ><i class="fas fa-bolt me-1"></i>Quick Send</span
+            >
+            <span class="tag tag-success"
+              ><i class="fas fa-check-circle me-1"></i>Smart Compose</span
+            >
+            <span class="tag tag-warning"
+              ><i class="fas fa-clock me-1"></i>Schedule</span
+            >
+          </div>
+        </div>
+        <div class="mt-4 col-md-4 d-flex justify-content-md-end mt-md-0">
+          <button
+            type="button"
+            class="btn btn-light"
+            data-toggle="modal"
+            data-target="#helpModal"
+          >
+            <i class="fas fa-question-circle me-2"></i>Help
+          </button>
+        </div>
       </div>
     </div>
 
-    <div class="form-group">
-      <label for="to" class="text-dark"><h6>To</h6></label>
-      <input type="email" class="form-control" id="to" name="to" placeholder="Use Commas to separate multiple emails" required>
-    </div>
+    <div class="p-3 mb-2 text-white rounded bg-">
+      <form
+        id="emailForm"
+        action="/submit"
+        method="POST"
+        style="background-color: white"
+      >
+        <div class="form-group">
+          <input type="checkbox" id="ReplyTo" />
+          <label for="ReplyTo" class="text-dark"><h5>Add Reply To</h5></label
+          ><br />
+          <div id="replyToSection" style="display: none">
+            <label for="ReplyToInput" class="text-dark"
+              ><h6>Reply To</h6></label
+            >
+            <input
+              type="email"
+              class="form-control"
+              id="ReplyToInput"
+              placeholder="Use Commas to separate multiple emails"
+            />
+          </div>
+        </div>
 
-    <div class="form-group">
-      <input type="checkbox" id="CC_Bcc">
-      <label for="CC_Bcc" class="text-dark"><h5>Add Cc/Bcc</h5></label><br>
-      <div id="ccBccSection" style="display: none;">
-        <label for="cc" class="text-dark"><h6>Cc</h6></label>
-        <input type="text" class="form-control" id="cc" name="cc" placeholder="Use Commas to separate multiple emails"><br>
-        <label for="bcc" class="text-dark"><h6>Bcc</h6></label>
-        <input type="text" class="form-control" id="bcc" name="bcc" placeholder="Use Commas to separate multiple emails">
-      </div>
-    </div>
+        <div class="form-group">
+          <label for="to" class="text-dark"><h6>To</h6></label>
+          <input
+            type="email"
+            class="form-control"
+            id="to"
+            name="to"
+            placeholder="Use Commas to separate multiple emails"
+            required
+          />
+        </div>
 
-    <div class="form-group">
-      <label for="subject" class="text-dark"><h6>Subject</h6></label>
-      <input type="text" class="form-control" id="subject" name="subject" placeholder="Email Subject" required>
-    </div>
+        <div class="form-group">
+          <input type="checkbox" id="CC_Bcc" />
+          <label for="CC_Bcc" class="text-dark"><h5>Add Cc/Bcc</h5></label
+          ><br />
+          <div id="ccBccSection" style="display: none">
+            <label for="cc" class="text-dark"><h6>Cc</h6></label>
+            <input
+              type="text"
+              class="form-control"
+              id="cc"
+              name="cc"
+              placeholder="Use Commas to separate multiple emails"
+            /><br />
+            <label for="bcc" class="text-dark"><h6>Bcc</h6></label>
+            <input
+              type="text"
+              class="form-control"
+              id="bcc"
+              name="bcc"
+              placeholder="Use Commas to separate multiple emails"
+            />
+          </div>
+        </div>
 
+        <div class="form-group">
+          <label for="subject" class="text-dark"><h6>Subject</h6></label>
+          <input
+            type="text"
+            class="form-control"
+            id="subject"
+            name="subject"
+            placeholder="Email Subject"
+            required
+          />
+        </div>
 
-    <div class="form-group mb-0">
-      <label for="Body" class="text-dark"><h6>Body</h6></label>
-      </div>
-      <div class="container border rounded p-0 mb-3 ">
-      <div class="flex-wrap"><ul class="nav bodyNav w-100 nav-tabs bg-light rounded" id="myTab" role="tablist">
-            <li class="nav-item">
-                <a class="nav-link active text-dark" id="text-tab" data-toggle="tab" href="#text" role="tab" aria-controls="text" aria-selected="true" onclick="setActiveTab('text')" >Text</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link  text-dark" id="html-tab" data-toggle="tab" href="#html" role="tab" aria-controls="html" aria-selected="false" onclick="setActiveTab('html')">HTML</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link text-dark " id="markdown-tab" data-toggle="tab" href="#markdown" role="tab" aria-controls="markdown" aria-selected="false" onclick="setActiveTab('markdown')">Markdown</a>
-            </li>
-            <div class="col-md-7 col-3 col-lg-9 d-flex justify-content-end align-items-center mt-lg-0 p-0 float-right">
-              <button  type="button" onclick="displayPreview()" class="previewbtn btn-md rounded mb-2 ">Preview</button>
+        <div class="mb-0 form-group">
+          <label for="Body" class="text-dark"><h6>Body</h6></label>
+        </div>
+        <div class="container p-0 mb-3 border rounded">
+          <div class="flex-wrap">
+            <ul
+              class="rounded nav bodyNav w-100 nav-tabs bg-light"
+              id="myTab"
+              role="tablist"
+            >
+              <li class="nav-item">
+                <a
+                  class="nav-link active text-dark"
+                  id="text-tab"
+                  data-toggle="tab"
+                  href="#text"
+                  role="tab"
+                  aria-controls="text"
+                  aria-selected="true"
+                  onclick="setActiveTab('text')"
+                  >Text</a
+                >
+              </li>
+              <li class="nav-item">
+                <a
+                  class="nav-link text-dark"
+                  id="html-tab"
+                  data-toggle="tab"
+                  href="#html"
+                  role="tab"
+                  aria-controls="html"
+                  aria-selected="false"
+                  onclick="setActiveTab('html')"
+                  >HTML</a
+                >
+              </li>
+              <li class="nav-item">
+                <a
+                  class="nav-link text-dark"
+                  id="markdown-tab"
+                  data-toggle="tab"
+                  href="#markdown"
+                  role="tab"
+                  aria-controls="markdown"
+                  aria-selected="false"
+                  onclick="setActiveTab('markdown')"
+                  >Markdown</a
+                >
+              </li>
+              <div
+                class="float-right p-0 col-md-7 col-3 col-lg-9 d-flex justify-content-end align-items-center mt-lg-0"
+              >
+                <button
+                  type="button"
+                  onclick="displayPreview()"
+                  class="mb-2 rounded previewbtn btn-md"
+                >
+                  Preview
+                </button>
+              </div>
+            </ul>
+          </div>
+          <div class="tab-content" id="TabContents">
+            <div
+              class="tab-pane fade show active"
+              id="text"
+              role="tabpanel"
+              aria-labelledby="text-tab"
+            >
+              <div class="mt-3 line-numbers"></div>
+              <textarea
+                class="mt-3 form-control code-editor"
+                rows="10"
+                id="tbody"
+                name="tbody"
+                placeholder="Write your email here"
+              ></textarea>
             </div>
-            
-        </ul>
-         </div>  
-    <div class="tab-content  " id="TabContents">
-      
-        <div class="tab-pane fade show active " id="text" role="tabpanel" aria-labelledby="text-tab">
-          <div  class="line-numbers mt-3"></div>
-            <textarea class="form-control code-editor mt-3"  rows="10" id="tbody" name="tbody" placeholder="Write your email here"></textarea> 
+            <div
+              class="tab-pane fade"
+              id="html"
+              role="tabpanel"
+              aria-labelledby="html-tab"
+            >
+              <div class="line-numbers html-line-numbers"></div>
+              <textarea
+                class="form-control code-editor"
+                rows="5"
+                id="htmlB"
+                placeholder="Write your email as HTML"
+              ></textarea>
+            </div>
+            <div
+              class="tab-pane fade"
+              id="markdown"
+              role="tabpanel"
+              aria-labelledby="markdown-tab"
+            >
+              <div class="line-numbers markdown-line-numbers"></div>
+              <textarea
+                class="form-control code-editor"
+                rows="5"
+                id="mdB"
+                placeholder="Write your email as Markdown."
+              ></textarea>
+            </div>
+          </div>
         </div>
-        <div class="tab-pane fade" id="html" role="tabpanel" aria-labelledby="html-tab">
-          <div class="line-numbers html-line-numbers"></div>
-          <textarea class="form-control code-editor"  rows="5" id="htmlB" placeholder="Write your email as HTML"></textarea> 
+        <button
+          type="submit"
+          onclick="submitForm()"
+          id="sendButton"
+          class="mt-2 ml-2 btn btn-light"
+        >
+          Send Email
+        </button>
+
+        <div id="loader-overlay">
+          <div class="loader"></div>
         </div>
-        <div class="tab-pane fade" id="markdown" role="tabpanel" aria-labelledby="markdown-tab">
-          <div class="line-numbers markdown-line-numbers"></div>
-          <textarea class="form-control code-editor"  rows="5" id="mdB" placeholder="Write your email as Markdown."></textarea> 
-        </div>
+        <script src="index.js"></script>
+      </form>
+    </div>
+
+    <footer class="py-4 mt-5 bg-light">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-6">
+            <p class="mb-0 text-dark">
+              © 2024 Managed Email Service. All rights reserved.
+            </p>
+          </div>
+          <div class="col-md-6 text-md-end">
+            <a href="#" class="text-dark me-3">Privacy Policy</a>
+            <a href="#" class="text-dark">Terms of Service</a>
+          </div>
         </div>
       </div>
-    <button type="submit" onclick="submitForm()" id="sendButton"  class="btn ml-2 btn-light mt-2"  >Send Email</button>
- 
-  <div id="loader-overlay">
-    <div class="loader">
-    </div>
-  </div> 
-  <script src="index.js"> </script>
+    </footer>
 
-  </form>
-</div>
-</body>
+    <!-- Help Modal -->
+    <div
+      class="modal fade"
+      id="helpModal"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="helpModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="helpModalLabel">
+              How to Use the Email Composer
+            </h5>
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="accordion" id="helpAccordion">
+              <div class="card">
+                <div class="card-header" id="headingOne">
+                  <h2 class="mb-0">
+                    <button
+                      class="text-left btn btn-link btn-block"
+                      type="button"
+                      data-toggle="collapse"
+                      data-target="#collapseOne"
+                      aria-expanded="true"
+                      aria-controls="collapseOne"
+                    >
+                      Setting Up Recipients
+                    </button>
+                  </h2>
+                </div>
+                <div
+                  id="collapseOne"
+                  class="collapse show"
+                  aria-labelledby="headingOne"
+                  data-parent="#helpAccordion"
+                >
+                  <div class="card-body">
+                    <ol>
+                      <li>
+                        Enter recipient email addresses in the
+                        <strong>To</strong> field.
+                      </li>
+                      <li>
+                        For multiple recipients, separate email addresses with
+                        commas.
+                      </li>
+                      <li>
+                        Use the <strong>Add Cc/Bcc</strong> checkbox to add
+                        carbon copy or blind carbon copy recipients.
+                      </li>
+                      <li>
+                        Use the <strong>Add Reply-To</strong> checkbox if you
+                        want replies to go to a different email address.
+                      </li>
+                    </ol>
+                  </div>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-header" id="headingTwo">
+                  <h2 class="mb-0">
+                    <button
+                      class="text-left btn btn-link btn-block collapsed"
+                      type="button"
+                      data-toggle="collapse"
+                      data-target="#collapseTwo"
+                      aria-expanded="false"
+                      aria-controls="collapseTwo"
+                    >
+                      Composing Your Email
+                    </button>
+                  </h2>
+                </div>
+                <div
+                  id="collapseTwo"
+                  class="collapse"
+                  aria-labelledby="headingTwo"
+                  data-parent="#helpAccordion"
+                >
+                  <div class="card-body">
+                    <ol>
+                      <li>
+                        Enter a clear and concise <strong>Subject</strong> line.
+                      </li>
+                      <li>
+                        Choose your preferred format in the tabs: Text, HTML, or
+                        Markdown.
+                      </li>
+                      <li>Write your email content in the editor.</li>
+                      <li>
+                        Use the <strong>Format</strong> button to automatically
+                        format plain text with proper spacing.
+                      </li>
+                      <li>
+                        Use the <strong>Spell Check</strong> button to check for
+                        common spelling errors.
+                      </li>
+                      <li>
+                        Click <strong>Preview</strong> to see how your email
+                        will look before sending.
+                      </li>
+                    </ol>
+                  </div>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-header" id="headingThree">
+                  <h2 class="mb-0">
+                    <button
+                      class="text-left btn btn-link btn-block collapsed"
+                      type="button"
+                      data-toggle="collapse"
+                      data-target="#collapseThree"
+                      aria-expanded="false"
+                      aria-controls="collapseThree"
+                    >
+                      Attachments and Options
+                    </button>
+                  </h2>
+                </div>
+                <div
+                  id="collapseThree"
+                  class="collapse"
+                  aria-labelledby="headingThree"
+                  data-parent="#helpAccordion"
+                >
+                  <div class="card-body">
+                    <ol>
+                      <li>
+                        Click <strong>Choose Files</strong> to attach files to
+                        your email.
+                      </li>
+                      <li>
+                        In <strong>Advanced Options</strong>, you can set
+                        tracking preferences and priority.
+                      </li>
+                      <li>
+                        Select an <strong>SMTP Provider</strong> at the top
+                        (SendGrid, Mailgun, or default).
+                      </li>
+                    </ol>
+                  </div>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-header" id="headingFour">
+                  <h2 class="mb-0">
+                    <button
+                      class="text-left btn btn-link btn-block collapsed"
+                      type="button"
+                      data-toggle="collapse"
+                      data-target="#collapseFour"
+                      aria-expanded="false"
+                      aria-controls="collapseFour"
+                    >
+                      Sending Your Email
+                    </button>
+                  </h2>
+                </div>
+                <div
+                  id="collapseFour"
+                  class="collapse"
+                  aria-labelledby="headingFour"
+                  data-parent="#helpAccordion"
+                >
+                  <div class="card-body">
+                    <ol>
+                      <li>
+                        Review your email to ensure all details are correct.
+                      </li>
+                      <li>
+                        Click the <strong>Send Email</strong> button to deliver
+                        your message.
+                      </li>
+                      <li>
+                        A loading indicator will appear while your email is
+                        being sent.
+                      </li>
+                      <li>
+                        You'll receive a notification when your email has been
+                        sent successfully.
+                      </li>
+                    </ol>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-dismiss="modal"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  </body>
 </html>
