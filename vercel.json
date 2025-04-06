@@ -21,12 +21,11 @@
       "dest": "/app.js"
     },
     {
-      "src": "/favicon.ico",
-      "dest": "/public/favicon.ico"
+      "handle": "filesystem"
     },
     {
-      "src": "/(.*)",
-      "dest": "/public/$1"
+      "src": "/.*",
+      "dest": "/public/index.html"
     }
   ],
   "env": {

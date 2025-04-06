@@ -39,9 +39,7 @@ const app = express();
 
 // CORS configuration
 const corsOptions = {
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://email-service-mauve-ten.vercel.app']
-    : ['http://localhost:3005'],
+  origin: '*', // Allow all origins in production
   methods: ['GET', 'POST'],
   allowedHeaders: ['Content-Type'],
   credentials: true
@@ -63,6 +61,12 @@ app.get('/api/health', (req, res) => {
 
 // Handle file upload and email submission
 app.post('/submit', (req, res, next) => {
+  console.log('Submit endpoint hit:', {
+    method: req.method,
+    headers: req.headers,
+    body: req.body
+  });
+
   const handleUpload = upload.array('attachments');
   
   handleUpload(req, res, async (err) => {

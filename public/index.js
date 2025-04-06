@@ -50,7 +50,7 @@ window.submitForm = async function(form) {
             attachments: formData.getAll('attachments').length
         });
 
-        const response = await fetch(`${window.location.origin}/submit`, {
+        const response = await fetch('/submit', {
             method: 'POST',
             body: formData
         });
