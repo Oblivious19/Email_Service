@@ -52,15 +52,27 @@ window.submitForm = async function(form) {
 
         const response = await fetch(`${window.location.origin}/submit`, {
             method: 'POST',
-            body: formData // FormData automatically sets the correct Content-Type
+            body: formData
         });
 
         let result;
-        const contentType = response.headers.get("content-type");
-        if (contentType && contentType.includes("application/json")) {
-            result = await response.json();
-        } else {
-            result = { error: 'Invalid response from server' };
+        try {
+            const text = await response.text();
+            try {
+                result = JSON.parse(text);
+            } catch (e) {
+                console.error('Failed to parse response as JSON:', text);
+                result = { 
+                    error: 'Server Error',
+                    message: 'The server returned an invalid response. Please try again.'
+                };
+            }
+        } catch (e) {
+            console.error('Failed to read response:', e);
+            result = { 
+                error: 'Network Error',
+                message: 'Failed to read server response. Please try again.'
+            };
         }
 
         if (!response.ok) {

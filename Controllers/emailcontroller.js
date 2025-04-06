@@ -1,6 +1,8 @@
 import { sendEmail } from "../services/Emailservice.js";
 
 async function sendEmailController(req, res) {
+  res.setHeader('Content-Type', 'application/json');
+  
   console.log('📧 Email send request received');
   console.log('Request body:', {
     to: req.body.to,
@@ -20,7 +22,7 @@ async function sendEmailController(req, res) {
       console.log('❌ Missing required fields:', missingFields);
       return res.status(400).json({
         error: 'Missing required fields',
-        missingFields: missingFields
+        message: `Missing required fields: ${missingFields.join(', ')}`
       });
     }
 
@@ -61,6 +63,13 @@ async function sendEmailController(req, res) {
     };
     
     try {
+      console.log('Attempting to send email with options:', {
+        from: fromAddress,
+        to,
+        subject,
+        hasAttachments: attachments.length > 0
+      });
+
       const info = await sendEmail(mailOptions);
       console.log('✅ Email sent successfully:', info);
       return res.status(200).json({
