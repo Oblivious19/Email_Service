@@ -63,7 +63,7 @@ async function sendEmailController(req, res) {
     try {
       const info = await sendEmail(mailOptions);
       console.log('✅ Email sent successfully:', info);
-      res.json({
+      return res.status(200).json({
         success: true,
         messageId: info.messageId,
         response: info.response
@@ -107,7 +107,7 @@ async function sendEmailController(req, res) {
     }
   } catch (error) {
     console.error('❌ Controller error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       error: 'Server error',
       message: error.message || 'An unexpected error occurred. Please check server logs.'
     });

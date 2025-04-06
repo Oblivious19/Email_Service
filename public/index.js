@@ -55,12 +55,17 @@ window.submitForm = async function(form) {
             body: formData // FormData automatically sets the correct Content-Type
         });
 
-        if (!response.ok) {
-            const result = await response.json();
-            throw new Error(result.message || result.error || 'Failed to send email');
+        let result;
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.includes("application/json")) {
+            result = await response.json();
+        } else {
+            result = { error: 'Invalid response from server' };
         }
 
-        const result = await response.json();
+        if (!response.ok) {
+            throw new Error(result.message || result.error || 'Failed to send email');
+        }
 
         // Clear the form on success
         form.reset();
