@@ -3,15 +3,15 @@ import { sendEmail } from "../services/Emailservice.js";
 async function sendEmailController(req, res) {
   res.setHeader('Content-Type', 'application/json');
   
-  console.log('📧 Email send request received');
-  console.log('Request body:', {
-    to: req.body.to,
-    subject: req.body.subject,
-    hasContent: !!req.body.tbody,
-    attachments: req.files ? req.files.length : 0
-  });
-
   try {
+    console.log('📧 Email send request received');
+    console.log('Request body:', {
+      to: req.body.to,
+      subject: req.body.subject,
+      hasContent: !!req.body.tbody,
+      attachments: req.files ? req.files.length : 0
+    });
+
     // Check for required fields
     const missingFields = [];
     if (!req.body.to) missingFields.push('to');
@@ -110,7 +110,8 @@ async function sendEmailController(req, res) {
           return res.status(500).json({
             error: 'Email sending failed',
             message: emailError.message || 'An error occurred while sending the email',
-            code: emailError.code
+            code: emailError.code,
+            details: process.env.NODE_ENV === 'development' ? emailError.stack : undefined
           });
       }
     }
@@ -118,7 +119,8 @@ async function sendEmailController(req, res) {
     console.error('❌ Controller error:', error);
     return res.status(500).json({
       error: 'Server error',
-      message: error.message || 'An unexpected error occurred. Please check server logs.'
+      message: error.message || 'An unexpected error occurred',
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 }
