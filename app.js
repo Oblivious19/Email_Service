@@ -18,9 +18,18 @@ console.log('Environment variables loaded:', {
   USE_MOCK_TRANSPORT: process.env.USE_MOCK_TRANSPORT
 });
 
+// Add this near the top of your file, after the imports
+console.log('Environment Variables Check:', {
+  SMTP_USER_EXISTS: !!process.env.SMTP_USER,
+  SMTP_PASS_EXISTS: !!process.env.SMTP_PASS,
+  USE_MOCK_TRANSPORT: process.env.USE_MOCK_TRANSPORT,
+  NODE_ENV: process.env.NODE_ENV,
+  VERCEL: process.env.VERCEL
+});
+
 // Import other dependencies after environment variables are loaded
 import express from 'express';
-import emailController from './Controllers/emailcontroller.js';
+import emailController from './controllers/emailcontroller.js';
 import { upload, initializeTransporter } from './services/Emailservice.js';
 import bodyParser from "body-parser";
 import multer from "multer";

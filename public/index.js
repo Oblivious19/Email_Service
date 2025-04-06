@@ -21,115 +21,57 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Make submitForm globally accessible
-window.submitForm = function() {
-    return new Promise(async (resolve, reject) => {
-        const emailForm = document.getElementById('emailForm');
-        if (!emailForm) {
-            reject(new Error("Form elements not found"));
-            return;
-        }
+window.submitForm = async function(event) {
+    event.preventDefault();
+    
+    if (isSubmitting) {
+        console.log('Form is already being submitted');
+        return;
+    }
+
+    try {
+        isSubmitting = true;
+        const sendButton = document.getElementById('sendButton');
+        sendButton.disabled = true;
+        sendButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Sending...';
+
+        const formData = new FormData(event.target);
         
-        // Show loading overlay
-        const loader = document.getElementById("loader-overlay");
-        if (loader) {
-            loader.style.display = "flex";
+        console.log('Submitting form with data:', {
+            to: formData.get('to'),
+            subject: formData.get('subject'),
+            hasContent: !!formData.get('tbody'),
+            attachments: formData.getAll('attachments').length
+        });
+
+        const response = await fetch('/submit', {
+            method: 'POST',
+            body: formData
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.message || 'Failed to send email');
         }
 
-        try {
-            // Create form data
-            const formData = new FormData(emailForm);
-            
-            // Get recipient tags if present
-            const recipientTags = document.querySelectorAll('#recipientTags .tag');
-            if (recipientTags.length > 0) {
-                const recipients = Array.from(recipientTags).map(tag => {
-                    return tag.textContent.trim().replace(' ×', '').replace(/\s*close$/, '');
-                }).join(',');
-                formData.set('to', recipients);
-            }
-
-            // Get the to field directly if no tags
-            const toField = document.getElementById('to');
-            if (toField && toField.value && !formData.get('to')) {
-                formData.set('to', toField.value);
-            }
-
-            // Send the email via AJAX
-            const response = await fetch('/submit', {
-                method: 'POST',
-                body: formData
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const data = await response.text();
-            
-            // Show success message
-            let successMsg = 'Email sent successfully!';
-            if (data.includes('via SendGrid')) {
-                successMsg = 'Email sent via SendGrid!';
-            } else if (data.includes('via Mailgun')) {
-                successMsg = 'Email sent via Mailgun!';
-            } else if (data.includes('via Gmail')) {
-                successMsg = 'Email sent via Gmail!';
-            }
-            
-            toast(successMsg, 'success');
-            
-            // Reset form
-            emailForm.reset();
-            
-            // Clear recipient tags
-            const recipientTagsContainer = document.getElementById('recipientTags');
-            if (recipientTagsContainer) {
-                recipientTagsContainer.innerHTML = '';
-            }
-            
-            // Clear attachments
-            const attachmentList = document.getElementById('attachmentList');
-            if (attachmentList) {
-                attachmentList.innerHTML = '';
-            }
-            
-            // Clear provider selection
-            document.querySelectorAll('.smtp-option').forEach(c => {
-                c.classList.remove('border-primary');
-                const button = c.querySelector('button');
-                if (button) {
-                    button.classList.remove('btn-primary');
-                    button.classList.add('btn-outline-primary');
-                }
-            });
-            
-            // Remove provider field
-            const providerField = document.getElementById('smtpProvider');
-            if (providerField) {
-                providerField.remove();
-            }
-            
-            // Reset textarea heights
-            ['tbody', 'htmlB', 'mdB'].forEach(id => {
-                const textarea = document.getElementById(id);
-                if (textarea) {
-                    textarea.style.height = "";
-                    textarea.style.height = Math.min(300, textarea.scrollHeight) + "px";
-                }
-            });
-
-            resolve();
-        } catch (error) {
-            // Show error message
-            toast('Failed to send email: ' + error.message, 'error');
-            reject(error);
-        } finally {
-            // Hide loading overlay
-            if (loader) {
-                loader.style.display = "none";
-            }
-        }
-    });
+        // Clear the form on success
+        event.target.reset();
+        document.getElementById('attachmentList').innerHTML = '';
+        
+        // Show success message
+        showAlert('success', 'Email sent successfully! 🎉');
+        console.log('Email sent:', result);
+    } catch (error) {
+        console.error('Form submission error:', error);
+        showAlert('danger', `Failed to send email: ${error.message}`);
+    } finally {
+        isSubmitting = false;
+        const sendButton = document.getElementById('sendButton');
+        sendButton.disabled = false;
+        sendButton.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Send';
+        console.log('Submission complete');
+    }
 };
 
 function setActiveTab(tab) {
@@ -520,7 +462,7 @@ document.addEventListener("DOMContentLoaded", function() {
             isSubmitting = true;
             toggleSendButton();
             
-            window.submitForm()
+            window.submitForm(event)
                 .catch(error => console.error('Form submission error:', error))
                 .finally(() => {
                     console.log('Submission complete');
@@ -634,3 +576,25 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
+function showAlert(type, message) {
+    const alertContainer = document.getElementById('alertContainer');
+    const alert = document.createElement('div');
+    alert.className = `alert alert-${type} alert-dismissible fade show`;
+    alert.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+    
+    // Remove any existing alerts
+    alertContainer.innerHTML = '';
+    alertContainer.appendChild(alert);
+    
+    // Auto-dismiss after 5 seconds
+    setTimeout(() => {
+        if (alert && alert.parentNode === alertContainer) {
+            alert.classList.remove('show');
+            setTimeout(() => alertContainer.removeChild(alert), 150);
+        }
+    }, 5000);
+}

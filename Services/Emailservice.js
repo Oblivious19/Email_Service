@@ -25,37 +25,42 @@ export function initializeEmailService() {
 // Create a Gmail transporter
 export async function getTransporter() {
   if (!_transporter) {
+    // Log environment status
+    console.log('Email Service Environment:', {
+      isVercel: process.env.VERCEL === '1',
+      nodeEnv: process.env.NODE_ENV,
+      hasSMTPUser: !!process.env.SMTP_USER,
+      hasSMTPPass: !!process.env.SMTP_PASS
+    });
+
     // Check if we should use mock
-    if (process.env.USE_MOCK_TRANSPORT === 'true' || 
-        (process.env.VERCEL === '1' && process.env.NODE_ENV !== 'production')) {
-      console.log('Using mock transport (environment determined)');
+    if (process.env.USE_MOCK_TRANSPORT === 'true') {
+      console.log('Using mock transport (explicitly set in environment)');
       _transporter = createMockTransport();
       return _transporter;
     }
     
     // Create real transporter
-    const smtpUser = process.env.SMTP_USER;
-    const smtpPass = process.env.SMTP_PASS;
+    const smtpUser = process.env.SMTP_USER?.trim();
+    const smtpPass = process.env.SMTP_PASS?.trim();
     
     if (!smtpUser || !smtpPass) {
-      console.error('Missing SMTP credentials. Check your .env file.');
-      _transporter = createMockTransport();
-      return _transporter;
+      console.error('Missing SMTP credentials:', {
+        hasUser: !!smtpUser,
+        hasPass: !!smtpPass
+      });
+      throw new Error('SMTP credentials not configured. Please check environment variables.');
     }
     
-    console.log('Creating Gmail transport with:', {
-      user: smtpUser,
-      host: 'smtp.gmail.com',
-      port: 587
-    });
+    console.log('Creating Gmail transport for:', smtpUser);
     
     _transporter = nodemailer.createTransport({
       host: 'smtp.gmail.com',
       port: 587,
       secure: false,
       auth: {
-        user: smtpUser.trim(),
-        pass: smtpPass.trim()
+        user: smtpUser,
+        pass: smtpPass
       },
       tls: {
         rejectUnauthorized: true,
@@ -74,16 +79,26 @@ export async function getTransporter() {
         response: error.response,
         responseCode: error.responseCode
       });
-      console.log('Falling back to mock transport due to verification error');
-      _transporter = createMockTransport();
+      throw new Error(`SMTP verification failed: ${error.message}`);
     }
   }
   
   return _transporter;
 }
 
-// Export the transporter initialization function instead of the instance
-export const initializeTransporter = () => getTransporter();
+// Export the transporter initialization function
+export const initializeTransporter = async () => {
+  try {
+    const transport = await getTransporter();
+    console.log('Email transport initialized successfully:', {
+      type: transport.options?.mock ? 'mock' : 'gmail'
+    });
+    return transport;
+  } catch (error) {
+    console.error('Failed to initialize email transport:', error);
+    throw error;
+  }
+};
 
 // Create SendGrid transporter
 export function createSendGridTransport() {
@@ -145,20 +160,20 @@ export function createMailgunTransport() {
 export function createMockTransport() {
   console.log('Creating mock transport for testing');
   return {
-    sendMail: (mailOptions, callback) => {
-      console.log('🔵 MOCK EMAIL SENT');
-      console.log('===================');
-      console.log('From:', mailOptions.from);
-      console.log('To:', mailOptions.to);
-      console.log('Subject:', mailOptions.subject);
-      console.log('Content:', mailOptions.text || mailOptions.html);
-      if (mailOptions.attachments && mailOptions.attachments.length > 0) {
-        console.log('Attachments:', mailOptions.attachments.length);
-      }
-      console.log('===================');
-      
-      setTimeout(() => {
-        callback(null, {
+    sendMail: (mailOptions) => {
+      return new Promise((resolve) => {
+        console.log('🔵 MOCK EMAIL SENT');
+        console.log('===================');
+        console.log('From:', mailOptions.from);
+        console.log('To:', mailOptions.to);
+        console.log('Subject:', mailOptions.subject);
+        console.log('Content:', mailOptions.text || mailOptions.html);
+        if (mailOptions.attachments && mailOptions.attachments.length > 0) {
+          console.log('Attachments:', mailOptions.attachments.length);
+        }
+        console.log('===================');
+        
+        resolve({
           messageId: `mock-email-${Date.now()}@localhost`,
           envelope: { from: mailOptions.from, to: mailOptions.to },
           accepted: [mailOptions.to],
@@ -166,37 +181,32 @@ export function createMockTransport() {
           pending: [],
           response: 'Mock email sent successfully'
         });
-      }, 100);
+      });
     },
-    verify: (callback) => callback(null, true),
+    verify: () => Promise.resolve(true),
     options: { mock: true }
   };
 }
 
-// Send email function with error handling
+// Send email function with improved error handling
 export async function sendEmail(mailOptions) {
-  const transport = await getTransporter();
-  
-  console.log('Sending email with:', {
-    from: mailOptions.from,
-    to: mailOptions.to,
-    subject: mailOptions.subject,
-    hasAttachments: !!mailOptions.attachments,
-    transportType: transport.options?.mock ? 'mock' : 'gmail'
-  });
-
   try {
-    const info = await new Promise((resolve, reject) => {
-      transport.sendMail(mailOptions, (error, info) => {
-        if (error) {
-          console.error('Error sending email:', error);
-          reject(error);
-          return;
-        }
-        resolve(info);
-      });
+    const transport = await getTransporter();
+    
+    if (!transport) {
+      throw new Error('Email transport not initialized');
+    }
+
+    console.log('Sending email with:', {
+      from: mailOptions.from,
+      to: mailOptions.to,
+      subject: mailOptions.subject,
+      hasAttachments: !!mailOptions.attachments,
+      transportType: transport.options?.mock ? 'mock' : 'gmail'
     });
 
+    const info = await transport.sendMail(mailOptions);
+    
     console.log('Email sent successfully:', {
       messageId: info.messageId,
       response: info.response,
@@ -206,11 +216,11 @@ export async function sendEmail(mailOptions) {
 
     return info;
   } catch (error) {
-    console.error('Failed to send email:', {
+    console.error('Error in sendEmail:', {
       code: error.code,
+      message: error.message,
       command: error.command,
-      response: error.response,
-      responseCode: error.responseCode
+      response: error.response
     });
     throw error;
   }

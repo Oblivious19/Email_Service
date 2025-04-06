@@ -2,14 +2,26 @@ import { sendEmail } from "../services/Emailservice.js";
 
 async function sendEmailController(req, res) {
   console.log('📧 Email send request received');
-  console.log('Request body:', req.body);
-  console.log('Attachments:', req.files ? `${req.files.length} files` : 'No attachments');
+  console.log('Request body:', {
+    to: req.body.to,
+    subject: req.body.subject,
+    hasContent: !!req.body.tbody,
+    attachments: req.files ? req.files.length : 0
+  });
 
   try {
     // Check for required fields
-    if (!req.body.to || !req.body.subject || !req.body.tbody) {
-      console.log('❌ Missing required fields');
-      return res.status(400).send('Missing required fields in the request body.');
+    const missingFields = [];
+    if (!req.body.to) missingFields.push('to');
+    if (!req.body.subject) missingFields.push('subject');
+    if (!req.body.tbody) missingFields.push('message content');
+
+    if (missingFields.length > 0) {
+      console.log('❌ Missing required fields:', missingFields);
+      return res.status(400).json({
+        error: 'Missing required fields',
+        missingFields: missingFields
+      });
     }
 
     // Extract fields from req.body
@@ -21,7 +33,10 @@ async function sendEmailController(req, res) {
     
     if (!fromAddress) {
       console.error('❌ No sender email address configured');
-      return res.status(500).send('No sender email address configured. Please check SMTP_USER in .env');
+      return res.status(500).json({
+        error: 'Configuration error',
+        message: 'Email service not properly configured. Please check server environment variables.'
+      });
     }
 
     // Construct mail options
@@ -38,45 +53,57 @@ async function sendEmailController(req, res) {
       }))
     };
     
-    console.log('Attempting to send email with options:', {
-      from: fromAddress,
-      to,
-      subject,
-      hasAttachments: attachments.length > 0
-    });
-
     try {
       const info = await sendEmail(mailOptions);
       console.log('✅ Email sent successfully:', info);
-      res.send(`Email sent successfully. Message ID: ${info.messageId}`);
+      res.json({
+        success: true,
+        messageId: info.messageId,
+        response: info.response
+      });
     } catch (emailError) {
       console.error('❌ Failed to send email:', emailError);
       
-      // Check if this is an authentication error
-      if (emailError.code === 'EAUTH') {
-        return res.status(401).send(
-          'Authentication failed. Please check your Gmail account settings:\n' +
-          '1. Ensure 2-Step Verification is enabled\n' +
-          '2. Use an App Password instead of your regular password\n' +
-          '3. Make sure the App Password is correctly copied to SMTP_PASS in .env'
-        );
+      // Check for specific error types
+      switch(emailError.code) {
+        case 'EAUTH':
+          return res.status(401).json({
+            error: 'Authentication failed',
+            message: 'Gmail authentication failed. Please ensure:\n' +
+                    '1. You\'re using an App Password (not regular password)\n' +
+                    '2. 2-Step Verification is enabled on your Gmail account\n' +
+                    '3. The App Password is correctly configured in the server'
+          });
+        
+        case 'ECONNECTION':
+          return res.status(503).json({
+            error: 'Connection failed',
+            message: 'Could not connect to Gmail. Please check:\n' +
+                    '1. Server internet connection\n' +
+                    '2. Gmail service status\n' +
+                    '3. Server firewall settings'
+          });
+        
+        case 'ESOCKET':
+          return res.status(503).json({
+            error: 'Network error',
+            message: 'Network connection issue. Please try again.'
+          });
+        
+        default:
+          return res.status(500).json({
+            error: 'Email sending failed',
+            message: emailError.message,
+            code: emailError.code
+          });
       }
-      
-      // Check if this is a connection error
-      if (emailError.code === 'ECONNECTION') {
-        return res.status(503).send(
-          'Failed to connect to Gmail. Please check:\n' +
-          '1. Your internet connection\n' +
-          '2. Gmail service status\n' +
-          '3. Any firewall or antivirus settings'
-        );
-      }
-
-      res.status(500).send(`Failed to send email: ${emailError.message}`);
     }
   } catch (error) {
     console.error('❌ Controller error:', error);
-    res.status(500).send(`Server error: ${error.message}`);
+    res.status(500).json({
+      error: 'Server error',
+      message: 'An unexpected error occurred. Please check server logs.'
+    });
   }
 }
 

@@ -518,475 +518,373 @@
         </div>
       </div>
 
-      <div class="row mb-4">
-        <div class="col-md-4 mb-4 mb-md-0">
+      <div class="container mt-4">
+        <div id="alertContainer" class="mb-3"></div>
+        <div class="card">
           <div
-            class="card card-hover smtp-option"
-            data-provider="sendgrid"
-            style="border: 2px solid transparent; transition: all 0.3s ease"
+            class="card-header d-flex justify-content-between align-items-center"
           >
-            <div class="card-body text-center p-4">
-              <div class="feature-icon mx-auto mb-3">
-                <i class="fas fa-paper-plane"></i>
-              </div>
-              <h5>SendGrid</h5>
-              <p class="text-muted">Popular email delivery service</p>
-              <div class="provider-details mb-3">
-                <div class="small text-muted mb-1">
-                  <i class="fas fa-envelope me-1"></i> Emails will appear as:
-                </div>
-                <div class="small fw-bold">mailed-by: sendgrid.net</div>
-                <div class="small fw-bold">signed-by: yourdomain.com</div>
-              </div>
-              <button class="btn btn-sm btn-outline-primary provider-select">
-                Select Provider
-              </button>
-            </div>
+            <h5 class="mb-0">Send Email</h5>
           </div>
-        </div>
-        <div class="col-md-4 mb-4 mb-md-0">
-          <div
-            class="card card-hover smtp-option"
-            data-provider="mailgun"
-            style="border: 2px solid transparent; transition: all 0.3s ease"
-          >
-            <div class="card-body text-center p-4">
-              <div class="feature-icon mx-auto mb-3">
-                <i class="fas fa-envelope-open-text"></i>
-              </div>
-              <h5>Mailgun</h5>
-              <p class="text-muted">Developer-friendly email API</p>
-              <div class="provider-details mb-3">
-                <div class="small text-muted mb-1">
-                  <i class="fas fa-envelope me-1"></i> Emails will appear as:
-                </div>
-                <div class="small fw-bold">mailed-by: mailgun.org</div>
-                <div class="small fw-bold">signed-by: yourdomain.com</div>
-              </div>
-              <button class="btn btn-sm btn-outline-primary provider-select">
-                Select Provider
-              </button>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-4">
-          <div
-            class="card card-hover smtp-option"
-            data-provider="custom"
-            style="border: 2px solid transparent; transition: all 0.3s ease"
-          >
-            <div class="card-body text-center p-4">
-              <div class="feature-icon mx-auto mb-3">
-                <i class="fas fa-cogs"></i>
-              </div>
-              <h5>Custom SMTP</h5>
-              <p class="text-muted">Use your own SMTP server</p>
-              <div class="provider-details mb-3">
-                <div class="small text-muted mb-1">
-                  <i class="fas fa-exclamation-circle me-1 text-warning"></i>
-                  Coming soon
-                </div>
-                <div class="small">
-                  Configure your own SMTP server for sending emails
-                </div>
-              </div>
-              <button class="btn btn-sm btn-outline-primary provider-select">
-                Select Provider
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div
-          class="card-header d-flex justify-content-between align-items-center"
-        >
-          <h5 class="mb-0">New Email</h5>
-          <div class="dropdown">
-            <button
-              class="btn btn-sm btn-outline-secondary dropdown-toggle"
-              type="button"
-              id="dropdownMenuButton"
-              data-bs-toggle="dropdown"
-              aria-expanded="false"
-            >
-              <i class="fas fa-ellipsis-v"></i>
-            </button>
-            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-              <li>
-                <a class="dropdown-item" href="#"
-                  ><i class="fas fa-save me-2"></i>Save as Template</a
-                >
-              </li>
-              <li>
-                <a class="dropdown-item" href="#"
-                  ><i class="fas fa-file me-2"></i>Load Template</a
-                >
-              </li>
-              <li><hr class="dropdown-divider" /></li>
-              <li>
-                <a class="dropdown-item" href="#"
-                  ><i class="fas fa-trash me-2"></i>Discard Draft</a
-                >
-              </li>
-            </ul>
-          </div>
-        </div>
-        <div class="card-body">
-          <form id="emailForm" enctype="multipart/form-data">
-            <!-- Recipient Section -->
-            <div class="row mb-4">
-              <div class="col-md-12">
-                <div class="mb-3">
-                  <label for="to" class="form-label">To</label>
-                  <div class="input-group">
-                    <input
-                      type="email"
-                      class="form-control"
-                      id="to"
-                      name="to"
-                      placeholder="recipient@example.com"
-                      required
-                    />
-                    <button
-                      class="btn btn-outline-secondary"
-                      type="button"
-                      id="addRecipient"
-                    >
-                      <i class="fas fa-address-book"></i>
-                    </button>
-                  </div>
-                  <div class="form-text">
-                    Use commas to separate multiple email addresses
-                  </div>
-                  <div id="recipientTags" class="mt-2">
-                    <!-- Example tags removed -->
-                  </div>
-                </div>
-
-                <div class="row">
-                  <div class="col-md-6">
-                    <div class="form-check mb-3">
-                      <input
-                        class="form-check-input"
-                        type="checkbox"
-                        id="CC_Bcc"
-                      />
-                      <label class="form-check-label" for="CC_Bcc"
-                        >Add Cc/Bcc</label
-                      >
-                    </div>
-
-                    <div id="ccBccSection" style="display: none" class="mb-3">
-                      <div class="mb-3">
-                        <label for="cc" class="form-label">Cc</label>
-                        <input
-                          type="text"
-                          class="form-control"
-                          id="cc"
-                          name="cc"
-                          placeholder="cc@example.com"
-                        />
-                      </div>
-                      <div class="mb-3">
-                        <label for="bcc" class="form-label">Bcc</label>
-                        <input
-                          type="text"
-                          class="form-control"
-                          id="bcc"
-                          name="bcc"
-                          placeholder="bcc@example.com"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="col-md-6">
-                    <div class="form-check mb-3">
-                      <input
-                        class="form-check-input"
-                        type="checkbox"
-                        id="ReplyTo"
-                      />
-                      <label class="form-check-label" for="ReplyTo"
-                        >Add Reply-To</label
-                      >
-                    </div>
-
-                    <div id="replyToSection" style="display: none" class="mb-3">
-                      <label for="ReplyToInput" class="form-label"
-                        >Reply To</label
-                      >
+          <div class="card-body">
+            <form id="emailForm" enctype="multipart/form-data">
+              <!-- Recipient Section -->
+              <div class="row mb-4">
+                <div class="col-md-12">
+                  <div class="mb-3">
+                    <label for="to" class="form-label">To</label>
+                    <div class="input-group">
                       <input
                         type="email"
                         class="form-control"
-                        id="ReplyToInput"
-                        name="replyTo"
-                        placeholder="reply-to@example.com"
+                        id="to"
+                        name="to"
+                        placeholder="recipient@example.com"
+                        required
                       />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Subject -->
-            <div class="mb-4">
-              <label for="subject" class="form-label">Subject</label>
-              <div class="input-group">
-                <input
-                  type="text"
-                  class="form-control"
-                  id="subject"
-                  name="subject"
-                  placeholder="Email Subject"
-                  required
-                />
-                <button
-                  class="btn btn-outline-secondary"
-                  type="button"
-                  id="generateSubject"
-                  title="Generate AI Subject"
-                >
-                  <i class="fas fa-wand-magic-sparkles"></i>
-                </button>
-              </div>
-            </div>
-
-            <!-- Email Body Editor -->
-            <div class="mb-4">
-              <label class="form-label">Email Body</label>
-              <div class="card">
-                <div class="card-header p-0 bg-white">
-                  <ul
-                    class="nav nav-tabs border-bottom-0 tab-buttons"
-                    id="myTab"
-                    role="tablist"
-                  >
-                    <li class="nav-item" role="presentation">
                       <button
-                        class="nav-link active"
-                        id="text-tab"
-                        data-bs-toggle="tab"
-                        data-bs-target="#text"
+                        class="btn btn-outline-secondary"
                         type="button"
-                        role="tab"
-                        aria-controls="text"
-                        aria-selected="true"
-                        onclick="setActiveTab('text')"
+                        id="addRecipient"
                       >
-                        <i class="fas fa-font me-2"></i>Text
-                      </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                      <button
-                        class="nav-link"
-                        id="html-tab"
-                        data-bs-toggle="tab"
-                        data-bs-target="#html"
-                        type="button"
-                        role="tab"
-                        aria-controls="html"
-                        aria-selected="false"
-                        onclick="setActiveTab('html')"
-                      >
-                        <i class="fas fa-code me-2"></i>HTML
-                      </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                      <button
-                        class="nav-link"
-                        id="markdown-tab"
-                        data-bs-toggle="tab"
-                        data-bs-target="#markdown"
-                        type="button"
-                        role="tab"
-                        aria-controls="markdown"
-                        aria-selected="false"
-                        onclick="setActiveTab('markdown')"
-                      >
-                        <i class="fab fa-markdown me-2"></i>Markdown
-                      </button>
-                    </li>
-                    <li class="ms-auto">
-                      <button
-                        type="button"
-                        class="btn btn-preview mx-2"
-                        onclick="displayPreview()"
-                      >
-                        <i class="fas fa-eye me-1"></i>Preview
-                      </button>
-                    </li>
-                  </ul>
-                </div>
-
-                <div class="tab-content p-3" id="TabContents">
-                  <div
-                    class="tab-pane fade show active"
-                    id="text"
-                    role="tabpanel"
-                    aria-labelledby="text-tab"
-                  >
-                    <div class="d-flex justify-content-end mb-2">
-                      <button
-                        class="btn btn-sm btn-outline-primary me-2"
-                        id="formatText"
-                      >
-                        <i class="fas fa-paragraph me-1"></i>Format
-                      </button>
-                      <button
-                        class="btn btn-sm btn-outline-primary"
-                        id="spellCheck"
-                      >
-                        <i class="fas fa-spell-check me-1"></i>Spell Check
+                        <i class="fas fa-address-book"></i>
                       </button>
                     </div>
-                    <textarea
-                      class="form-control code-editor"
-                      rows="10"
-                      id="tbody"
-                      name="tbody"
-                      placeholder="Write your email here"
-                    ></textarea>
+                    <div class="form-text">
+                      Use commas to separate multiple email addresses
+                    </div>
+                    <div id="recipientTags" class="mt-2">
+                      <!-- Example tags removed -->
+                    </div>
                   </div>
-                  <div
-                    class="tab-pane fade"
-                    id="html"
-                    role="tabpanel"
-                    aria-labelledby="html-tab"
-                  >
-                    <textarea
-                      class="form-control code-editor"
-                      rows="10"
-                      id="htmlB"
-                      name="htmlB"
-                      placeholder="Write your email as HTML"
-                    ></textarea>
-                  </div>
-                  <div
-                    class="tab-pane fade"
-                    id="markdown"
-                    role="tabpanel"
-                    aria-labelledby="markdown-tab"
-                  >
-                    <textarea
-                      class="form-control code-editor"
-                      rows="10"
-                      id="mdB"
-                      name="mdB"
-                      placeholder="Write your email as Markdown"
-                    ></textarea>
-                  </div>
-                </div>
-              </div>
-            </div>
 
-            <!-- Attachments -->
-            <div class="mb-4">
-              <label
-                for="attachments"
-                class="form-label d-flex align-items-center"
-              >
-                <i class="fas fa-paperclip me-2"></i>Attachments
-              </label>
-              <div class="input-group">
-                <input
-                  type="file"
-                  class="form-control"
-                  id="attachments"
-                  name="attachments"
-                  multiple
-                />
-                <button
-                  class="btn btn-outline-secondary"
-                  type="button"
-                  id="dropboxButton"
-                >
-                  <i class="fab fa-dropbox"></i>
-                </button>
-                <button
-                  class="btn btn-outline-secondary"
-                  type="button"
-                  id="googleDriveButton"
-                >
-                  <i class="fab fa-google-drive"></i>
-                </button>
-              </div>
-              <div id="attachmentList" class="mt-2">
-                <!-- No example attachments shown by default -->
-              </div>
-            </div>
-
-            <!-- Email Options -->
-            <div class="mb-4">
-              <div class="card">
-                <div class="card-header p-3">
-                  <h6 class="mb-0">Advanced Options</h6>
-                </div>
-                <div class="card-body">
                   <div class="row">
-                    <div class="col-md-4">
-                      <div class="form-check form-switch">
+                    <div class="col-md-6">
+                      <div class="form-check mb-3">
                         <input
                           class="form-check-input"
                           type="checkbox"
-                          id="trackOpens"
+                          id="CC_Bcc"
                         />
-                        <label class="form-check-label" for="trackOpens">
-                          Track Opens
-                        </label>
+                        <label class="form-check-label" for="CC_Bcc"
+                          >Add Cc/Bcc</label
+                        >
+                      </div>
+
+                      <div id="ccBccSection" style="display: none" class="mb-3">
+                        <div class="mb-3">
+                          <label for="cc" class="form-label">Cc</label>
+                          <input
+                            type="text"
+                            class="form-control"
+                            id="cc"
+                            name="cc"
+                            placeholder="cc@example.com"
+                          />
+                        </div>
+                        <div class="mb-3">
+                          <label for="bcc" class="form-label">Bcc</label>
+                          <input
+                            type="text"
+                            class="form-control"
+                            id="bcc"
+                            name="bcc"
+                            placeholder="bcc@example.com"
+                          />
+                        </div>
                       </div>
                     </div>
-                    <div class="col-md-4">
-                      <div class="form-check form-switch">
+
+                    <div class="col-md-6">
+                      <div class="form-check mb-3">
                         <input
                           class="form-check-input"
                           type="checkbox"
-                          id="trackClicks"
+                          id="ReplyTo"
                         />
-                        <label class="form-check-label" for="trackClicks">
-                          Track Clicks
-                        </label>
+                        <label class="form-check-label" for="ReplyTo"
+                          >Add Reply-To</label
+                        >
                       </div>
-                    </div>
-                    <div class="col-md-4">
-                      <div class="form-check form-switch">
+
+                      <div
+                        id="replyToSection"
+                        style="display: none"
+                        class="mb-3"
+                      >
+                        <label for="ReplyToInput" class="form-label"
+                          >Reply To</label
+                        >
                         <input
-                          class="form-check-input"
-                          type="checkbox"
-                          id="highPriority"
+                          type="email"
+                          class="form-control"
+                          id="ReplyToInput"
+                          name="replyTo"
+                          placeholder="reply-to@example.com"
                         />
-                        <label class="form-check-label" for="highPriority">
-                          High Priority
-                        </label>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <!-- Action Buttons -->
-            <div class="d-flex justify-content-between align-items-center">
-              <div class="btn-group">
-                <button type="button" class="btn btn-outline-secondary">
-                  <i class="fas fa-cog me-2"></i>Email Settings
-                </button>
-                <button type="button" class="btn btn-outline-secondary">
-                  <i class="fas fa-save me-2"></i>Save Draft
+              <!-- Subject -->
+              <div class="mb-4">
+                <label for="subject" class="form-label">Subject</label>
+                <div class="input-group">
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="subject"
+                    name="subject"
+                    placeholder="Email Subject"
+                    required
+                  />
+                  <button
+                    class="btn btn-outline-secondary"
+                    type="button"
+                    id="generateSubject"
+                    title="Generate AI Subject"
+                  >
+                    <i class="fas fa-wand-magic-sparkles"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Email Body Editor -->
+              <div class="mb-4">
+                <label class="form-label">Email Body</label>
+                <div class="card">
+                  <div class="card-header p-0 bg-white">
+                    <ul
+                      class="nav nav-tabs border-bottom-0 tab-buttons"
+                      id="myTab"
+                      role="tablist"
+                    >
+                      <li class="nav-item" role="presentation">
+                        <button
+                          class="nav-link active"
+                          id="text-tab"
+                          data-bs-toggle="tab"
+                          data-bs-target="#text"
+                          type="button"
+                          role="tab"
+                          aria-controls="text"
+                          aria-selected="true"
+                          onclick="setActiveTab('text')"
+                        >
+                          <i class="fas fa-font me-2"></i>Text
+                        </button>
+                      </li>
+                      <li class="nav-item" role="presentation">
+                        <button
+                          class="nav-link"
+                          id="html-tab"
+                          data-bs-toggle="tab"
+                          data-bs-target="#html"
+                          type="button"
+                          role="tab"
+                          aria-controls="html"
+                          aria-selected="false"
+                          onclick="setActiveTab('html')"
+                        >
+                          <i class="fas fa-code me-2"></i>HTML
+                        </button>
+                      </li>
+                      <li class="nav-item" role="presentation">
+                        <button
+                          class="nav-link"
+                          id="markdown-tab"
+                          data-bs-toggle="tab"
+                          data-bs-target="#markdown"
+                          type="button"
+                          role="tab"
+                          aria-controls="markdown"
+                          aria-selected="false"
+                          onclick="setActiveTab('markdown')"
+                        >
+                          <i class="fab fa-markdown me-2"></i>Markdown
+                        </button>
+                      </li>
+                      <li class="ms-auto">
+                        <button
+                          type="button"
+                          class="btn btn-preview mx-2"
+                          onclick="displayPreview()"
+                        >
+                          <i class="fas fa-eye me-1"></i>Preview
+                        </button>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <div class="tab-content p-3" id="TabContents">
+                    <div
+                      class="tab-pane fade show active"
+                      id="text"
+                      role="tabpanel"
+                      aria-labelledby="text-tab"
+                    >
+                      <div class="d-flex justify-content-end mb-2">
+                        <button
+                          class="btn btn-sm btn-outline-primary me-2"
+                          id="formatText"
+                        >
+                          <i class="fas fa-paragraph me-1"></i>Format
+                        </button>
+                        <button
+                          class="btn btn-sm btn-outline-primary"
+                          id="spellCheck"
+                        >
+                          <i class="fas fa-spell-check me-1"></i>Spell Check
+                        </button>
+                      </div>
+                      <textarea
+                        class="form-control code-editor"
+                        rows="10"
+                        id="tbody"
+                        name="tbody"
+                        placeholder="Write your email here"
+                      ></textarea>
+                    </div>
+                    <div
+                      class="tab-pane fade"
+                      id="html"
+                      role="tabpanel"
+                      aria-labelledby="html-tab"
+                    >
+                      <textarea
+                        class="form-control code-editor"
+                        rows="10"
+                        id="htmlB"
+                        name="htmlB"
+                        placeholder="Write your email as HTML"
+                      ></textarea>
+                    </div>
+                    <div
+                      class="tab-pane fade"
+                      id="markdown"
+                      role="tabpanel"
+                      aria-labelledby="markdown-tab"
+                    >
+                      <textarea
+                        class="form-control code-editor"
+                        rows="10"
+                        id="mdB"
+                        name="mdB"
+                        placeholder="Write your email as Markdown"
+                      ></textarea>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Attachments -->
+              <div class="mb-4">
+                <label
+                  for="attachments"
+                  class="form-label d-flex align-items-center"
+                >
+                  <i class="fas fa-paperclip me-2"></i>Attachments
+                </label>
+                <div class="input-group">
+                  <input
+                    type="file"
+                    class="form-control"
+                    id="attachments"
+                    name="attachments"
+                    multiple
+                  />
+                  <button
+                    class="btn btn-outline-secondary"
+                    type="button"
+                    id="dropboxButton"
+                  >
+                    <i class="fab fa-dropbox"></i>
+                  </button>
+                  <button
+                    class="btn btn-outline-secondary"
+                    type="button"
+                    id="googleDriveButton"
+                  >
+                    <i class="fab fa-google-drive"></i>
+                  </button>
+                </div>
+                <div id="attachmentList" class="mt-2">
+                  <!-- No example attachments shown by default -->
+                </div>
+              </div>
+
+              <!-- Email Options -->
+              <div class="mb-4">
+                <div class="card">
+                  <div class="card-header p-3">
+                    <h6 class="mb-0">Advanced Options</h6>
+                  </div>
+                  <div class="card-body">
+                    <div class="row">
+                      <div class="col-md-4">
+                        <div class="form-check form-switch">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            id="trackOpens"
+                          />
+                          <label class="form-check-label" for="trackOpens">
+                            Track Opens
+                          </label>
+                        </div>
+                      </div>
+                      <div class="col-md-4">
+                        <div class="form-check form-switch">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            id="trackClicks"
+                          />
+                          <label class="form-check-label" for="trackClicks">
+                            Track Clicks
+                          </label>
+                        </div>
+                      </div>
+                      <div class="col-md-4">
+                        <div class="form-check form-switch">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            id="highPriority"
+                          />
+                          <label class="form-check-label" for="highPriority">
+                            High Priority
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="d-flex justify-content-between align-items-center">
+                <div class="btn-group">
+                  <button type="button" class="btn btn-outline-secondary">
+                    <i class="fas fa-cog me-2"></i>Email Settings
+                  </button>
+                  <button type="button" class="btn btn-outline-secondary">
+                    <i class="fas fa-save me-2"></i>Save Draft
+                  </button>
+                </div>
+                <button type="button" id="sendButton" class="btn btn-primary">
+                  <i class="fas fa-paper-plane me-2"></i>Send Email
                 </button>
               </div>
-              <button type="button" id="sendButton" class="btn btn-primary">
-                <i class="fas fa-paper-plane me-2"></i>Send Email
-              </button>
-            </div>
 
-            <!-- Loading Overlay -->
-            <div id="loader-overlay">
-              <div class="loader"></div>
-            </div>
-          </form>
+              <!-- Loading Overlay -->
+              <div id="loader-overlay">
+                <div class="loader"></div>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
     </div>
