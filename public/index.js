@@ -451,7 +451,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 event.stopPropagation();
             }
 
-            if (isSubmitting || sendButton.disabled) {
+            if (isSubmitting) {
                 console.log('Preventing duplicate submission');
                 return false;
             }
@@ -465,16 +465,9 @@ document.addEventListener("DOMContentLoaded", function() {
                 hasContent: !!formData.get('tbody'),
                 attachments: formData.getAll('attachments').length
             });
-            isSubmitting = true;
-            toggleSendButton();
-            
+
             window.submitForm(form)
-                .catch(error => console.error('Form submission error:', error))
-                .finally(() => {
-                    console.log('Submission complete');
-                    isSubmitting = false;
-                    toggleSendButton();
-                });
+                .catch(error => console.error('Form submission error:', error));
 
             return false;
         }
