@@ -21,9 +21,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Make submitForm globally accessible
-window.submitForm = async function(event) {
-    event.preventDefault();
-    
+window.submitForm = async function(form) {
     if (isSubmitting) {
         console.log('Form is already being submitted');
         return;
@@ -35,7 +33,7 @@ window.submitForm = async function(event) {
         sendButton.disabled = true;
         sendButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Sending...';
 
-        const formData = new FormData(event.target);
+        const formData = new FormData(form);
         
         console.log('Submitting form with data:', {
             to: formData.get('to'),
@@ -56,7 +54,7 @@ window.submitForm = async function(event) {
         }
 
         // Clear the form on success
-        event.target.reset();
+        form.reset();
         document.getElementById('attachmentList').innerHTML = '';
         
         // Show success message
