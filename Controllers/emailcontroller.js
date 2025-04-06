@@ -26,7 +26,17 @@ async function sendEmailController(req, res) {
 
     // Extract fields from req.body
     const { from, to, subject, tbody, cc, bcc } = req.body;
-    const attachments = req.files || [];
+    
+    // Handle file attachments
+    let attachments = [];
+    if (req.files && req.files.length > 0) {
+      attachments = req.files.map(file => ({
+        filename: file.originalname,
+        content: file.buffer,
+        contentType: file.mimetype
+      }));
+      console.log(`📎 Processing ${attachments.length} attachments`);
+    }
 
     // Set the from address
     const fromAddress = from || process.env.SMTP_USER;
@@ -47,10 +57,7 @@ async function sendEmailController(req, res) {
       text: tbody,
       cc,
       bcc,
-      attachments: attachments.map(file => ({
-        filename: file.originalname,
-        content: file.buffer
-      }))
+      attachments
     };
     
     try {
@@ -93,7 +100,7 @@ async function sendEmailController(req, res) {
         default:
           return res.status(500).json({
             error: 'Email sending failed',
-            message: emailError.message,
+            message: emailError.message || 'An error occurred while sending the email',
             code: emailError.code
           });
       }
@@ -102,7 +109,7 @@ async function sendEmailController(req, res) {
     console.error('❌ Controller error:', error);
     res.status(500).json({
       error: 'Server error',
-      message: 'An unexpected error occurred. Please check server logs.'
+      message: error.message || 'An unexpected error occurred. Please check server logs.'
     });
   }
 }

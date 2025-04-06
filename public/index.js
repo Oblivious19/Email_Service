@@ -35,6 +35,14 @@ window.submitForm = async function(form) {
 
         const formData = new FormData(form);
         
+        // Get the active tab content
+        const activeContent = activeTab === 'text' ? document.getElementById('tbody').value :
+                            activeTab === 'html' ? document.getElementById('htmlB').value :
+                            document.getElementById('mdB').value;
+        
+        // Update the form data with the active content
+        formData.set('tbody', activeContent);
+        
         console.log('Submitting form with data:', {
             to: formData.get('to'),
             subject: formData.get('subject'),
@@ -44,14 +52,15 @@ window.submitForm = async function(form) {
 
         const response = await fetch(`${window.location.origin}/submit`, {
             method: 'POST',
-            body: formData
+            body: formData // FormData automatically sets the correct Content-Type
         });
 
-        const result = await response.json();
-
         if (!response.ok) {
-            throw new Error(result.message || 'Failed to send email');
+            const result = await response.json();
+            throw new Error(result.message || result.error || 'Failed to send email');
         }
+
+        const result = await response.json();
 
         // Clear the form on success
         form.reset();
