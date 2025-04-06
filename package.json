@@ -1,19 +1,37 @@
-
-{ 
+{
   "name": "managed-email-service",
   "version": "1.0.0",
-  "description": "",
+  "description": "A modern email service management application",
   "main": "app.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node app.js",
+    "dev": "nodemon app.js",
+    "vercel-build": "echo 'Building for Vercel deployment'",
+    "check-env": "node check-env.js"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
+    "@headlessui/react": "^2.2.0",
+    "@heroicons/react": "^2.2.0",
+    "bcryptjs": "^3.0.2",
+    "bootstrap": "^5.3.2",
+    "dotenv": "^16.4.7",
     "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.2",
+    "jwt-decode": "^4.0.0",
     "multer": "^1.4.5-lts.1",
-    "nodemailer": "^6.9.8"
+    "nodemailer": "^6.9.7",
+    "react-hot-toast": "^2.5.2",
+    "react-quill": "^2.0.0",
+    "react-router-dom": "^7.4.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
