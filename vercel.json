@@ -12,11 +12,12 @@
   ],
   "routes": [
     {
-      "src": "/api/(.*)",
+      "src": "/submit",
+      "methods": ["POST"],
       "dest": "app.js"
     },
     {
-      "src": "/submit",
+      "src": "/api/(.*)",
       "dest": "app.js"
     },
     {

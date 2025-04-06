@@ -44,7 +44,7 @@ window.submitForm = async function(event) {
             attachments: formData.getAll('attachments').length
         });
 
-        const response = await fetch('/submit', {
+        const response = await fetch(`${window.location.origin}/submit`, {
             method: 'POST',
             body: formData
         });
@@ -458,7 +458,12 @@ document.addEventListener("DOMContentLoaded", function() {
                 return false;
             }
 
-            console.log('Handling submit');
+            console.log('Handling submit', {
+                to: formData.get('to'),
+                subject: formData.get('subject'),
+                hasContent: !!formData.get('tbody'),
+                attachments: formData.getAll('attachments').length
+            });
             isSubmitting = true;
             toggleSendButton();
             
