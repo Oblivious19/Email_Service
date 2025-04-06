@@ -13,8 +13,14 @@
   "routes": [
     {
       "src": "/submit",
-      "methods": ["POST"],
-      "dest": "/app.js"
+      "methods": ["POST", "OPTIONS"],
+      "dest": "/app.js",
+      "headers": {
+        "Access-Control-Allow-Origin": "https://email-service-mauve-ten.vercel.app",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        "Access-Control-Allow-Credentials": "true"
+      }
     },
     {
       "src": "/api/(.*)",
@@ -34,7 +40,8 @@
   "functions": {
     "app.js": {
       "memory": 1024,
-      "maxDuration": 10
+      "maxDuration": 10,
+      "includeFiles": ["controllers/**"]
     }
   }
 } 

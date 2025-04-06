@@ -29,51 +29,55 @@ const storage = multer.memoryStorage();
 const upload = multer({ 
   storage: storage,
   limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB limit
-    files: 5 // Maximum 5 files
+    fileSize: 5 * 1024 * 1024, // Reduce to 5MB limit for serverless
+    files: 3 // Maximum 3 files for serverless
   }
-});
+}).array('attachments', 3); // Pre-configure for attachments field
 
 // Create Express app
 const app = express();
 
-// CORS configuration
+// CORS configuration with more specific options
 const corsOptions = {
-  origin: '*', // Allow all origins in production
-  methods: ['GET', 'POST'],
-  allowedHeaders: ['Content-Type'],
-  credentials: true
+  origin: process.env.VERCEL ? [
+    'https://email-service-mauve-ten.vercel.app',
+    'https://email-service-oblivious19.vercel.app'
+  ] : '*',
+  methods: ['POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+  maxAge: 86400 // 24 hours
 };
 
 // Middleware
 app.use(cors(corsOptions));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '5mb' }));
+app.use(express.urlencoded({ extended: true, limit: '5mb' }));
 
 // API health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'healthy',
     environment: process.env.NODE_ENV,
+    vercel: process.env.VERCEL === '1',
     timestamp: new Date().toISOString()
   });
 });
 
 // Handle file upload and email submission
-app.post('/submit', (req, res, next) => {
+app.post('/submit', (req, res) => {
   console.log('Submit endpoint hit:', {
     method: req.method,
-    headers: req.headers,
-    body: req.body
+    contentType: req.headers['content-type'],
+    size: req.headers['content-length']
   });
 
-  const handleUpload = upload.array('attachments');
-  
-  handleUpload(req, res, async (err) => {
+  upload(req, res, async (err) => {
     if (err instanceof multer.MulterError) {
       console.error('Multer error:', err);
       return res.status(400).json({
         error: 'File upload error',
+        code: err.code,
         message: err.message
       });
     } else if (err) {
@@ -85,13 +89,17 @@ app.post('/submit', (req, res, next) => {
     }
 
     try {
-      await emailController.sendEmailController(req, res, next);
+      // Validate request body
+      if (!req.body || !req.body.to) {
+        throw new Error('Missing required fields');
+      }
+
+      await emailController.sendEmailController(req, res);
     } catch (error) {
       console.error('Controller error:', error);
       return res.status(500).json({
         error: 'Server error',
-        message: 'An error occurred while processing your request',
-        details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        message: error.message || 'An error occurred while processing your request'
       });
     }
   });
@@ -102,7 +110,8 @@ app.use((err, req, res, next) => {
   console.error('Global error handler:', err);
   res.status(500).json({
     error: 'Server error',
-    message: process.env.NODE_ENV === 'development' ? err.message : 'An unexpected error occurred'
+    message: err.message || 'An unexpected error occurred',
+    code: 'FUNCTION_ERROR'
   });
 });
 
