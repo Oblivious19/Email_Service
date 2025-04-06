@@ -25,23 +25,31 @@ app.get('/', (req, res) => {
 
 app.post('/submit', upload.array('attachments'), emailController.sendEmailController);
 
-const port = process.env.PORT || 3000;
-const startServer = () => {
-  const server = app.listen(port, () => {
-    console.log(`Server is running on port: ${port}`);
-  });
+// For Vercel serverless deployment, we don't need to listen to a port
+// This is only needed for local development
+if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
+  const port = process.env.PORT || 3000;
+  const startServer = () => {
+    // Check if port is already in use to avoid infinite loop
+    const server = app.listen(port, () => {
+      console.log(`Server is running on port: ${port}`);
+    });
 
-  server.on('error', (e) => {
-    if (e.code === 'EADDRINUSE') {
-      console.log(`Port ${port} is already in use. Trying port ${port + 1}...`);
-      // Try the next port
-      process.env.PORT = port + 1;
-      server.close();
-      startServer();
-    } else {
-      console.error('Server error:', e);
-    }
-  });
-};
+    server.on('error', (e) => {
+      if (e.code === 'EADDRINUSE') {
+        console.log(`Port ${port} is already in use. Trying port ${parseInt(port) + 1}...`);
+        // Try the next port (ensure it's a number)
+        process.env.PORT = parseInt(port) + 1;
+        server.close();
+        startServer();
+      } else {
+        console.error('Server error:', e);
+      }
+    });
+  };
 
-startServer();
+  startServer();
+}
+
+// Export the Express API for Vercel
+export default app;

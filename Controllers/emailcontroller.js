@@ -3,12 +3,16 @@ import { transporter } from "../services/Emailservice.js";
 import { createSendGridTransport, createMailgunTransport, createMockTransport } from "../services/Emailservice.js";
 
 async function sendEmailController(req, res) {
+  console.log('📧 Email send request received');
+  console.log('Running on Vercel?', process.env.VERCEL ? 'Yes' : 'No');
+  console.log('Environment:', process.env.NODE_ENV || 'development');
   console.log(req.body);   // Log form data
-  console.log(req.files);  // Log file uploads
+  console.log(req.files ? `Attachments: ${req.files.length}` : 'No attachments');  // Log file uploads
 
   try {
     // Check for required fields
     if (!req.body.to || !req.body.subject || !req.body.tbody) {
+      console.log('❌ Missing required fields');
       return res.status(400).send('Missing required fields in the request body.');
     }
 
@@ -21,6 +25,8 @@ async function sendEmailController(req, res) {
     let providerName = "Gmail";
     
     if (smtpProvider) {
+      console.log(`Using provider: ${smtpProvider}`);
+      
       switch(smtpProvider) {
         case 'sendgrid':
           // In production, this should be your verified SendGrid sender
@@ -36,6 +42,8 @@ async function sendEmailController(req, res) {
           // Use the default transporter
           break;
       }
+    } else {
+      console.log('No provider specified, using default');
     }
 
     // Construct mail options
@@ -51,6 +59,8 @@ async function sendEmailController(req, res) {
         content: file.buffer
       }))
     };
+    
+    console.log(`Mail from: ${fromAddress}, to: ${to}, subject: ${subject}`);
 
     // Check if we're in a demo/preview environment (like Vercel preview deployments)
     const isDemo = process.env.VERCEL === '1' && process.env.NODE_ENV !== 'production';
@@ -59,10 +69,10 @@ async function sendEmailController(req, res) {
     let selectedTransporter;
     
     if (isDemo) {
-      console.log('Using mock transporter for Vercel preview');
+      console.log('✅ Using mock transporter for Vercel preview');
       selectedTransporter = createMockTransport();
     } else {
-      console.log(`Using ${smtpProvider || 'default'} as email provider`);
+      console.log(`✅ Using ${smtpProvider || 'default'} as email provider`);
       
       switch(smtpProvider) {
         case 'sendgrid':
@@ -85,7 +95,7 @@ async function sendEmailController(req, res) {
     // Send email with selected transporter
     selectedTransporter.sendMail(mailOptions, (error, info) => {
       if (error) {
-        console.error('Email sending error:', error);
+        console.error('❌ Email sending error:', error.message);
         
         // Check if this is an authentication error for SendGrid or Mailgun
         if (error.code === 'EAUTH' && 
@@ -113,12 +123,12 @@ async function sendEmailController(req, res) {
         return res.status(500).send(error.toString());
       }
       
-      console.log('Email sent successfully:', info);
+      console.log('✅ Email sent successfully:', info.response || 'Success');
       res.send(`Email sent via ${providerName}: ${info.response || 'Success'}`);
     });
     
   } catch (error) {
-    console.error('Controller error:', error);
+    console.error('❌ Controller error:', error.message);
     res.status(500).json({ error: error.message });
   }
 }
