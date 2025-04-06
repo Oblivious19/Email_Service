@@ -52,27 +52,13 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static files only in development
-if (process.env.NODE_ENV !== 'production') {
-  app.use(express.static(path.join(__dirname, 'public')));
-}
-
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error('Global error handler:', err);
-  res.status(500).json({
-    error: 'Server error',
-    message: process.env.NODE_ENV === 'development' ? err.message : 'An unexpected error occurred'
+// API health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'healthy',
+    environment: process.env.NODE_ENV,
+    timestamp: new Date().toISOString()
   });
-});
-
-// Routes
-app.get('/', (req, res) => {
-  if (process.env.NODE_ENV === 'production') {
-    res.json({ status: 'Email service is running' });
-  } else {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
-  }
 });
 
 // Handle file upload and email submission
@@ -107,16 +93,25 @@ app.post('/submit', (req, res, next) => {
   });
 });
 
-// Handle 404
-app.use((req, res) => {
-  res.status(404).json({
-    error: 'Not Found',
-    message: 'The requested resource was not found'
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error('Global error handler:', err);
+  res.status(500).json({
+    error: 'Server error',
+    message: process.env.NODE_ENV === 'development' ? err.message : 'An unexpected error occurred'
   });
 });
 
 // For local development
 if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
+  // Serve static files in development
+  app.use(express.static(path.join(__dirname, 'public')));
+  
+  // Serve index.html for root path in development
+  app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  });
+  
   const port = process.env.PORT || 3005;
   app.listen(port, () => {
     console.log(`Server is running on port: ${port}`);
