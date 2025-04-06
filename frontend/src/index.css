@@ -1,0 +1,12 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom styles that extend Tailwind */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Let App.css handle the specific component styling */

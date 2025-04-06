@@ -1,101 +1,1203 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Managed Email Service</title>
-  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
-<style>
-  
-</style>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Managed Email Service</title>
+    <!-- Modern CSS framework -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Font Awesome for icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+    />
+    <link rel="stylesheet" href="style.css" />
+    <style>
+      :root {
+        --primary: #4361ee;
+        --primary-dark: #3a56d4;
+        --secondary: #7209b7;
+        --success: #06d6a0;
+        --danger: #ef476f;
+        --warning: #ffd166;
+        --light: #f8f9fa;
+        --dark: #212529;
+        --gray-100: #f8f9fa;
+        --gray-200: #e9ecef;
+        --gray-300: #dee2e6;
+        --gray-800: #343a40;
 
+        /* Background & Text Colors */
+        --body-bg: #f0f4f8;
+        --body-color: #212529;
+        --card-bg: #ffffff;
+        --input-bg: #ffffff;
+        --input-border: var(--gray-300);
+        --code-bg: #f8fafc;
+        --header-gradient-start: var(--primary);
+        --header-gradient-end: var(--secondary);
+        --navbar-bg: #ffffff;
+      }
+
+      [data-bs-theme="dark"] {
+        --body-bg: #121212;
+        --body-color: #e9ecef;
+        --card-bg: #1e1e1e;
+        --input-bg: #2d2d2d;
+        --input-border: #444;
+        --code-bg: #2d2d2d;
+        --header-gradient-start: #2c3e50;
+        --header-gradient-end: #4a148c;
+        --navbar-bg: #1e1e1e;
+        --gray-100: #2d2d2d;
+        --gray-200: #444;
+        --gray-300: #555;
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+        background-color: var(--body-bg);
+        color: var(--body-color);
+      }
+
+      .navbar-brand {
+        font-weight: 700;
+        color: var(--primary);
+      }
+
+      .navbar {
+        background-color: var(--navbar-bg);
+      }
+
+      .card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+        background-color: var(--card-bg);
+      }
+
+      .card-header {
+        background-color: var(--card-bg);
+        border-bottom: 1px solid var(--gray-200);
+        padding: 1.25rem 1.5rem;
+      }
+
+      .form-label {
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        color: var(--gray-800);
+      }
+
+      .form-control,
+      .form-select {
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        border: 1px solid var(--input-border);
+        background-color: var(--input-bg);
+        color: var(--body-color);
+        transition: all 0.2s ease;
+      }
+
+      .form-control:focus,
+      .form-select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+      }
+
+      .form-check-input:checked {
+        background-color: var(--primary);
+        border-color: var(--primary);
+      }
+
+      .nav-tabs .nav-link {
+        border: none;
+        padding: 0.75rem 1.25rem;
+        font-weight: 500;
+        color: var(--primary);
+        transition: all 0.2s ease;
+      }
+
+      .nav-tabs .nav-link:hover {
+        background-color: rgba(67, 97, 238, 0.05);
+      }
+
+      .nav-tabs .nav-link.active {
+        color: var(--primary);
+        background: transparent;
+        border-bottom: 2px solid var(--primary);
+        font-weight: 600;
+      }
+
+      .btn-primary {
+        background-color: var(--primary);
+        border-color: var(--primary);
+        padding: 0.75rem 1.5rem;
+        font-weight: 500;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+      }
+
+      .btn-primary:hover,
+      .btn-primary:focus {
+        background-color: var(--primary-dark);
+        border-color: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(67, 97, 238, 0.25);
+      }
+
+      .btn-light {
+        background-color: white;
+        border-color: var(--gray-300);
+        color: var(--gray-800);
+      }
+
+      .btn-light:hover {
+        background-color: var(--gray-100);
+        border-color: var(--gray-300);
+      }
+
+      .btn-preview {
+        color: var(--primary);
+        background: transparent;
+        border: none;
+        font-weight: 500;
+        transition: all 0.2s ease;
+      }
+
+      .btn-preview:hover {
+        color: var(--primary-dark);
+        text-decoration: underline;
+      }
+
+      .code-editor {
+        font-family: "SF Mono", SFMono-Regular, Menlo, Monaco, Consolas,
+          monospace;
+        font-size: 0.9rem;
+        line-height: 1.5;
+        border-radius: 8px;
+        background-color: var(--code-bg);
+        color: var(--body-color);
+        border: 1px solid var(--gray-300);
+        padding: 1rem;
+      }
+
+      #loader-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(var(--body-bg-rgb, 255, 255, 255), 0.8);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+      }
+
+      .loader {
+        width: 48px;
+        height: 48px;
+        border: 5px solid var(--primary);
+        border-bottom-color: transparent;
+        border-radius: 50%;
+        animation: rotation 1s linear infinite;
+      }
+
+      @keyframes rotation {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .feature-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        background-color: rgba(67, 97, 238, 0.1);
+        color: var(--primary);
+        margin-bottom: 1rem;
+      }
+
+      .page-header {
+        background: linear-gradient(
+          135deg,
+          var(--header-gradient-start) 0%,
+          var(--header-gradient-end) 100%
+        );
+        color: white;
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .page-header::before {
+        content: "";
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        pointer-events: none;
+      }
+
+      .nav-pill {
+        display: inline-flex;
+        padding: 0.3rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        margin-right: 0.5rem;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        background-color: rgba(67, 97, 238, 0.1);
+        color: var(--primary);
+      }
+
+      .nav-pill:hover {
+        background-color: rgba(67, 97, 238, 0.2);
+        transform: translateY(-1px);
+      }
+
+      .nav-pill.active {
+        background-color: var(--primary);
+        color: white;
+      }
+
+      .pulse-animation {
+        animation: pulse 2s infinite;
+      }
+
+      @keyframes pulse {
+        0% {
+          box-shadow: 0 0 0 0 rgba(67, 97, 238, 0.4);
+        }
+        70% {
+          box-shadow: 0 0 0 10px rgba(67, 97, 238, 0);
+        }
+        100% {
+          box-shadow: 0 0 0 0 rgba(67, 97, 238, 0);
+        }
+      }
+
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        margin-right: 0.5rem;
+        background-color: var(--gray-200);
+        color: var(--gray-800);
+        transition: all 0.2s ease;
+      }
+
+      .tag-primary {
+        background-color: rgba(67, 97, 238, 0.1);
+        color: var(--primary);
+      }
+
+      .tag-success {
+        background-color: rgba(6, 214, 160, 0.1);
+        color: var(--success);
+      }
+
+      .tag-warning {
+        background-color: rgba(255, 209, 102, 0.1);
+        color: var(--warning);
+      }
+
+      .tag-danger {
+        background-color: rgba(239, 71, 111, 0.1);
+        color: var(--danger);
+      }
+
+      .tag .close {
+        margin-left: 0.5rem;
+        cursor: pointer;
+        font-size: 0.7rem;
+        opacity: 0.7;
+      }
+
+      .tag .close:hover {
+        opacity: 1;
+      }
+
+      .card-hover {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .card-hover:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      }
+
+      .text-gradient {
+        background: linear-gradient(
+          90deg,
+          var(--primary) 0%,
+          var(--secondary) 100%
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-fill-color: transparent;
+      }
+
+      .form-control-animated {
+        position: relative;
+        overflow: hidden;
+      }
+
+      .form-control-animated label {
+        position: absolute;
+        top: 1rem;
+        left: 1rem;
+        transition: all 0.2s ease;
+        pointer-events: none;
+        font-size: 0.9rem;
+        color: var(--gray-500);
+      }
+
+      .form-control-animated input:focus + label,
+      .form-control-animated input:not(:placeholder-shown) + label {
+        top: 0.2rem;
+        left: 0.8rem;
+        font-size: 0.7rem;
+        opacity: 0.7;
+      }
+
+      .form-control-animated input {
+        padding-top: 1.5rem;
+        padding-bottom: 0.5rem;
+      }
+
+      .theme-toggle-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: none;
+        background-color: transparent;
+        color: var(--body-color);
+      }
+
+      .theme-toggle-btn:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+        transform: rotate(15deg);
+      }
+
+      [data-bs-theme="dark"] .theme-toggle-btn:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+      }
+
+      .modal-content {
+        background-color: var(--card-bg);
+        color: var(--body-color);
+      }
+
+      .modal-header {
+        background-color: var(--card-bg);
+        border-bottom: 1px solid var(--gray-200);
+      }
+
+      footer {
+        background-color: var(--navbar-bg) !important;
+        color: var(--body-color);
+      }
+    </style>
   </head>
-<body class="container mt-5">
- 
-    <h1 class=" fw-bold text-center ">
-        Managed Email Service
-    </h1>
-    <div class="rounded p-3 mb-2 bg- text-white ">
-   <form id="emailForm" action="/submit"  method="POST" style="background-color: white;">
-   
-
-    <div class="form-group">
-      <input type="checkbox" id="ReplyTo">
-      <label for="ReplyTo" class="text-dark"><h5>Add Reply To</h5></label><br>
-      <div id="replyToSection" style="display: none;">
-        <label for="ReplyToInput" class="text-dark"><h6>Reply To</h6></label>
-        <input type="email" class="form-control" id="ReplyToInput" placeholder="Use Commas to separate multiple emails">
-      </div>
-    </div>
-
-    <div class="form-group">
-      <label for="to" class="text-dark"><h6>To</h6></label>
-      <input type="email" class="form-control" id="to" name="to" placeholder="Use Commas to separate multiple emails" required>
-    </div>
-
-    <div class="form-group">
-      <input type="checkbox" id="CC_Bcc">
-      <label for="CC_Bcc" class="text-dark"><h5>Add Cc/Bcc</h5></label><br>
-      <div id="ccBccSection" style="display: none;">
-        <label for="cc" class="text-dark"><h6>Cc</h6></label>
-        <input type="text" class="form-control" id="cc" name="cc" placeholder="Use Commas to separate multiple emails"><br>
-        <label for="bcc" class="text-dark"><h6>Bcc</h6></label>
-        <input type="text" class="form-control" id="bcc" name="bcc" placeholder="Use Commas to separate multiple emails">
-      </div>
-    </div>
-
-    <div class="form-group">
-      <label for="subject" class="text-dark"><h6>Subject</h6></label>
-      <input type="text" class="form-control" id="subject" name="subject" placeholder="Email Subject" required>
-    </div>
-
-
-    <div class="form-group mb-0">
-      <label for="Body" class="text-dark"><h6>Body</h6></label>
-      </div>
-      <div class="container border rounded p-0 mb-3 ">
-      <div class="flex-wrap"><ul class="nav bodyNav w-100 nav-tabs bg-light rounded" id="myTab" role="tablist">
-            <li class="nav-item">
-                <a class="nav-link active text-dark" id="text-tab" data-toggle="tab" href="#text" role="tab" aria-controls="text" aria-selected="true" onclick="setActiveTab('text')" >Text</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link  text-dark" id="html-tab" data-toggle="tab" href="#html" role="tab" aria-controls="html" aria-selected="false" onclick="setActiveTab('html')">HTML</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link text-dark " id="markdown-tab" data-toggle="tab" href="#markdown" role="tab" aria-controls="markdown" aria-selected="false" onclick="setActiveTab('markdown')">Markdown</a>
-            </li>
-            <div class="col-md-7 col-3 col-lg-9 d-flex justify-content-end align-items-center mt-lg-0 p-0 float-right">
-              <button  type="button" onclick="displayPreview()" class="previewbtn btn-md rounded mb-2 ">Preview</button>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-light py-3">
+      <div class="container">
+        <a class="navbar-brand d-flex align-items-center" href="#">
+          <i class="fas fa-envelope-open-text me-2 text-gradient"></i>
+          <span class="text-gradient">Managed Email Service</span>
+        </a>
+        <div class="ms-auto d-flex align-items-center">
+          <div class="me-3 d-none d-md-block">
+            <div class="nav-pill active">
+              <i class="fas fa-tachometer-alt me-2"></i>Dashboard
             </div>
-            
-        </ul>
-         </div>  
-    <div class="tab-content  " id="TabContents">
-      
-        <div class="tab-pane fade show active " id="text" role="tabpanel" aria-labelledby="text-tab">
-          <div  class="line-numbers mt-3"></div>
-            <textarea class="form-control code-editor mt-3"  rows="10" id="tbody" name="tbody" placeholder="Write your email here"></textarea> 
-        </div>
-        <div class="tab-pane fade" id="html" role="tabpanel" aria-labelledby="html-tab">
-          <div class="line-numbers html-line-numbers"></div>
-          <textarea class="form-control code-editor"  rows="5" id="htmlB" placeholder="Write your email as HTML"></textarea> 
-        </div>
-        <div class="tab-pane fade" id="markdown" role="tabpanel" aria-labelledby="markdown-tab">
-          <div class="line-numbers markdown-line-numbers"></div>
-          <textarea class="form-control code-editor"  rows="5" id="mdB" placeholder="Write your email as Markdown."></textarea> 
-        </div>
+            <div class="nav-pill">
+              <i class="fas fa-envelope me-2"></i>Emails
+            </div>
+            <div class="nav-pill"><i class="fas fa-cog me-2"></i>Settings</div>
+          </div>
+          <button
+            id="themeToggle"
+            class="theme-toggle-btn"
+            aria-label="Toggle dark mode"
+          >
+            <i class="fas fa-moon"></i>
+          </button>
         </div>
       </div>
-    <button type="submit" onclick="submitForm()" id="sendButton"  class="btn ml-2 btn-light mt-2"  >Send Email</button>
- 
-  <div id="loader-overlay">
-    <div class="loader">
-    </div>
-  </div> 
-  <script src="index.js"> </script>
+    </nav>
 
-  </form>
-</div>
-</body>
+    <div class="container py-5">
+      <div class="page-header">
+        <div class="row align-items-center">
+          <div class="col-md-8">
+            <h1 class="fw-bold mb-2">Email Composer</h1>
+            <p class="mb-0 opacity-75">
+              Create and send professional emails easily
+            </p>
+            <div class="mt-3">
+              <span class="tag tag-primary"
+                ><i class="fas fa-bolt me-1"></i>Quick Send</span
+              >
+              <span class="tag tag-success"
+                ><i class="fas fa-check-circle me-1"></i>Smart Compose</span
+              >
+              <span class="tag tag-warning"
+                ><i class="fas fa-clock me-1"></i>Schedule</span
+              >
+            </div>
+          </div>
+          <div class="col-md-4 d-flex justify-content-md-end mt-4 mt-md-0">
+            <a href="#" class="btn btn-light me-2"
+              ><i class="fas fa-question-circle me-2"></i>Help</a
+            >
+            <a href="#" class="btn btn-primary pulse-animation"
+              ><i class="fas fa-magic me-2"></i>AI Assist</a
+            >
+          </div>
+        </div>
+      </div>
+
+      <div class="row mb-4">
+        <div class="col-md-4 mb-4 mb-md-0">
+          <div
+            class="card card-hover smtp-option"
+            data-provider="sendgrid"
+            style="border: 2px solid transparent; transition: all 0.3s ease"
+          >
+            <div class="card-body text-center p-4">
+              <div class="feature-icon mx-auto mb-3">
+                <i class="fas fa-paper-plane"></i>
+              </div>
+              <h5>SendGrid</h5>
+              <p class="text-muted">Popular email delivery service</p>
+              <div class="provider-details mb-3">
+                <div class="small text-muted mb-1">
+                  <i class="fas fa-envelope me-1"></i> Emails will appear as:
+                </div>
+                <div class="small fw-bold">mailed-by: sendgrid.net</div>
+                <div class="small fw-bold">signed-by: yourdomain.com</div>
+              </div>
+              <button class="btn btn-sm btn-outline-primary provider-select">
+                Select Provider
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 mb-4 mb-md-0">
+          <div
+            class="card card-hover smtp-option"
+            data-provider="mailgun"
+            style="border: 2px solid transparent; transition: all 0.3s ease"
+          >
+            <div class="card-body text-center p-4">
+              <div class="feature-icon mx-auto mb-3">
+                <i class="fas fa-envelope-open-text"></i>
+              </div>
+              <h5>Mailgun</h5>
+              <p class="text-muted">Developer-friendly email API</p>
+              <div class="provider-details mb-3">
+                <div class="small text-muted mb-1">
+                  <i class="fas fa-envelope me-1"></i> Emails will appear as:
+                </div>
+                <div class="small fw-bold">mailed-by: mailgun.org</div>
+                <div class="small fw-bold">signed-by: yourdomain.com</div>
+              </div>
+              <button class="btn btn-sm btn-outline-primary provider-select">
+                Select Provider
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div
+            class="card card-hover smtp-option"
+            data-provider="custom"
+            style="border: 2px solid transparent; transition: all 0.3s ease"
+          >
+            <div class="card-body text-center p-4">
+              <div class="feature-icon mx-auto mb-3">
+                <i class="fas fa-cogs"></i>
+              </div>
+              <h5>Custom SMTP</h5>
+              <p class="text-muted">Use your own SMTP server</p>
+              <div class="provider-details mb-3">
+                <div class="small text-muted mb-1">
+                  <i class="fas fa-exclamation-circle me-1 text-warning"></i>
+                  Coming soon
+                </div>
+                <div class="small">
+                  Configure your own SMTP server for sending emails
+                </div>
+              </div>
+              <button class="btn btn-sm btn-outline-primary provider-select">
+                Select Provider
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div
+          class="card-header d-flex justify-content-between align-items-center"
+        >
+          <h5 class="mb-0">New Email</h5>
+          <div class="dropdown">
+            <button
+              class="btn btn-sm btn-outline-secondary dropdown-toggle"
+              type="button"
+              id="dropdownMenuButton"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+            >
+              <i class="fas fa-ellipsis-v"></i>
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+              <li>
+                <a class="dropdown-item" href="#"
+                  ><i class="fas fa-save me-2"></i>Save as Template</a
+                >
+              </li>
+              <li>
+                <a class="dropdown-item" href="#"
+                  ><i class="fas fa-file me-2"></i>Load Template</a
+                >
+              </li>
+              <li><hr class="dropdown-divider" /></li>
+              <li>
+                <a class="dropdown-item" href="#"
+                  ><i class="fas fa-trash me-2"></i>Discard Draft</a
+                >
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="card-body">
+          <form
+            id="emailForm"
+            action="/submit"
+            method="POST"
+            enctype="multipart/form-data"
+          >
+            <!-- Recipient Section -->
+            <div class="row mb-4">
+              <div class="col-md-12">
+                <div class="mb-3">
+                  <label for="to" class="form-label">To</label>
+                  <div class="input-group">
+                    <input
+                      type="email"
+                      class="form-control"
+                      id="to"
+                      name="to"
+                      placeholder="recipient@example.com"
+                      required
+                    />
+                    <button
+                      class="btn btn-outline-secondary"
+                      type="button"
+                      id="addRecipient"
+                    >
+                      <i class="fas fa-address-book"></i>
+                    </button>
+                  </div>
+                  <div class="form-text">
+                    Use commas to separate multiple email addresses
+                  </div>
+                  <div id="recipientTags" class="mt-2">
+                    <!-- Example tags removed -->
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form-check mb-3">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        id="CC_Bcc"
+                      />
+                      <label class="form-check-label" for="CC_Bcc"
+                        >Add Cc/Bcc</label
+                      >
+                    </div>
+
+                    <div id="ccBccSection" style="display: none" class="mb-3">
+                      <div class="mb-3">
+                        <label for="cc" class="form-label">Cc</label>
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="cc"
+                          name="cc"
+                          placeholder="cc@example.com"
+                        />
+                      </div>
+                      <div class="mb-3">
+                        <label for="bcc" class="form-label">Bcc</label>
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="bcc"
+                          name="bcc"
+                          placeholder="bcc@example.com"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-md-6">
+                    <div class="form-check mb-3">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        id="ReplyTo"
+                      />
+                      <label class="form-check-label" for="ReplyTo"
+                        >Add Reply-To</label
+                      >
+                    </div>
+
+                    <div id="replyToSection" style="display: none" class="mb-3">
+                      <label for="ReplyToInput" class="form-label"
+                        >Reply To</label
+                      >
+                      <input
+                        type="email"
+                        class="form-control"
+                        id="ReplyToInput"
+                        name="replyTo"
+                        placeholder="reply-to@example.com"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Subject -->
+            <div class="mb-4">
+              <label for="subject" class="form-label">Subject</label>
+              <div class="input-group">
+                <input
+                  type="text"
+                  class="form-control"
+                  id="subject"
+                  name="subject"
+                  placeholder="Email Subject"
+                  required
+                />
+                <button
+                  class="btn btn-outline-secondary"
+                  type="button"
+                  id="generateSubject"
+                  title="Generate AI Subject"
+                >
+                  <i class="fas fa-wand-magic-sparkles"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Email Body Editor -->
+            <div class="mb-4">
+              <label class="form-label">Email Body</label>
+              <div class="card">
+                <div class="card-header p-0 bg-white">
+                  <ul
+                    class="nav nav-tabs border-bottom-0 tab-buttons"
+                    id="myTab"
+                    role="tablist"
+                  >
+                    <li class="nav-item" role="presentation">
+                      <button
+                        class="nav-link active"
+                        id="text-tab"
+                        data-bs-toggle="tab"
+                        data-bs-target="#text"
+                        type="button"
+                        role="tab"
+                        aria-controls="text"
+                        aria-selected="true"
+                        onclick="setActiveTab('text')"
+                      >
+                        <i class="fas fa-font me-2"></i>Text
+                      </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                      <button
+                        class="nav-link"
+                        id="html-tab"
+                        data-bs-toggle="tab"
+                        data-bs-target="#html"
+                        type="button"
+                        role="tab"
+                        aria-controls="html"
+                        aria-selected="false"
+                        onclick="setActiveTab('html')"
+                      >
+                        <i class="fas fa-code me-2"></i>HTML
+                      </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                      <button
+                        class="nav-link"
+                        id="markdown-tab"
+                        data-bs-toggle="tab"
+                        data-bs-target="#markdown"
+                        type="button"
+                        role="tab"
+                        aria-controls="markdown"
+                        aria-selected="false"
+                        onclick="setActiveTab('markdown')"
+                      >
+                        <i class="fab fa-markdown me-2"></i>Markdown
+                      </button>
+                    </li>
+                    <li class="ms-auto">
+                      <button
+                        type="button"
+                        class="btn btn-preview mx-2"
+                        onclick="displayPreview()"
+                      >
+                        <i class="fas fa-eye me-1"></i>Preview
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+
+                <div class="tab-content p-3" id="TabContents">
+                  <div
+                    class="tab-pane fade show active"
+                    id="text"
+                    role="tabpanel"
+                    aria-labelledby="text-tab"
+                  >
+                    <div class="d-flex justify-content-end mb-2">
+                      <button
+                        class="btn btn-sm btn-outline-primary me-2"
+                        id="formatText"
+                      >
+                        <i class="fas fa-paragraph me-1"></i>Format
+                      </button>
+                      <button
+                        class="btn btn-sm btn-outline-primary"
+                        id="spellCheck"
+                      >
+                        <i class="fas fa-spell-check me-1"></i>Spell Check
+                      </button>
+                    </div>
+                    <textarea
+                      class="form-control code-editor"
+                      rows="10"
+                      id="tbody"
+                      name="tbody"
+                      placeholder="Write your email here"
+                    ></textarea>
+                  </div>
+                  <div
+                    class="tab-pane fade"
+                    id="html"
+                    role="tabpanel"
+                    aria-labelledby="html-tab"
+                  >
+                    <textarea
+                      class="form-control code-editor"
+                      rows="10"
+                      id="htmlB"
+                      name="htmlB"
+                      placeholder="Write your email as HTML"
+                    ></textarea>
+                  </div>
+                  <div
+                    class="tab-pane fade"
+                    id="markdown"
+                    role="tabpanel"
+                    aria-labelledby="markdown-tab"
+                  >
+                    <textarea
+                      class="form-control code-editor"
+                      rows="10"
+                      id="mdB"
+                      name="mdB"
+                      placeholder="Write your email as Markdown"
+                    ></textarea>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Attachments -->
+            <div class="mb-4">
+              <label
+                for="attachments"
+                class="form-label d-flex align-items-center"
+              >
+                <i class="fas fa-paperclip me-2"></i>Attachments
+              </label>
+              <div class="input-group">
+                <input
+                  type="file"
+                  class="form-control"
+                  id="attachments"
+                  name="attachments"
+                  multiple
+                />
+                <button
+                  class="btn btn-outline-secondary"
+                  type="button"
+                  id="dropboxButton"
+                >
+                  <i class="fab fa-dropbox"></i>
+                </button>
+                <button
+                  class="btn btn-outline-secondary"
+                  type="button"
+                  id="googleDriveButton"
+                >
+                  <i class="fab fa-google-drive"></i>
+                </button>
+              </div>
+              <div id="attachmentList" class="mt-2">
+                <!-- No example attachments shown by default -->
+              </div>
+            </div>
+
+            <!-- Email Options -->
+            <div class="mb-4">
+              <div class="card">
+                <div class="card-header p-3">
+                  <h6 class="mb-0">Advanced Options</h6>
+                </div>
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col-md-4">
+                      <div class="form-check form-switch">
+                        <input
+                          class="form-check-input"
+                          type="checkbox"
+                          id="trackOpens"
+                        />
+                        <label class="form-check-label" for="trackOpens">
+                          Track Opens
+                        </label>
+                      </div>
+                    </div>
+                    <div class="col-md-4">
+                      <div class="form-check form-switch">
+                        <input
+                          class="form-check-input"
+                          type="checkbox"
+                          id="trackClicks"
+                        />
+                        <label class="form-check-label" for="trackClicks">
+                          Track Clicks
+                        </label>
+                      </div>
+                    </div>
+                    <div class="col-md-4">
+                      <div class="form-check form-switch">
+                        <input
+                          class="form-check-input"
+                          type="checkbox"
+                          id="highPriority"
+                        />
+                        <label class="form-check-label" for="highPriority">
+                          High Priority
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="d-flex justify-content-between align-items-center">
+              <div class="btn-group">
+                <button type="button" class="btn btn-outline-secondary">
+                  <i class="fas fa-cog me-2"></i>Email Settings
+                </button>
+                <button type="button" class="btn btn-outline-secondary">
+                  <i class="fas fa-save me-2"></i>Save Draft
+                </button>
+              </div>
+              <button
+                type="button"
+                id="sendButton"
+                class="btn btn-primary"
+                onclick="submitForm()"
+              >
+                <i class="fas fa-paper-plane me-2"></i>Send Email
+              </button>
+            </div>
+
+            <!-- Loading Overlay -->
+            <div id="loader-overlay">
+              <div class="loader"></div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Structure -->
+    <div
+      class="modal fade"
+      id="contentModal"
+      tabindex="-1"
+      aria-labelledby="modalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modalLabel">Preview</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div id="modalContent" class="p-3"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="py-4 bg-light mt-5">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-6">
+            <p class="mb-0 text-muted">
+              © 2024 Managed Email Service. All rights reserved.
+            </p>
+          </div>
+          <div class="col-md-6 text-md-end">
+            <a href="#" class="text-muted me-3">Privacy Policy</a>
+            <a href="#" class="text-muted">Terms of Service</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Bootstrap 5 Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="index.js"></script>
+    <script>
+      // Dark mode toggle functionality
+      document.addEventListener("DOMContentLoaded", function () {
+        const themeToggle = document.getElementById("themeToggle");
+        const icon = themeToggle.querySelector("i");
+
+        // Set dark mode as the default theme
+        document.documentElement.setAttribute("data-bs-theme", "dark");
+        icon.classList.replace("fa-moon", "fa-sun");
+        localStorage.setItem("theme", "dark");
+
+        // Toggle theme when button is clicked
+        themeToggle.addEventListener("click", function () {
+          const currentTheme =
+            document.documentElement.getAttribute("data-bs-theme");
+
+          if (currentTheme === "dark") {
+            document.documentElement.setAttribute("data-bs-theme", "light");
+            icon.classList.replace("fa-sun", "fa-moon");
+            localStorage.setItem("theme", "light");
+          } else {
+            document.documentElement.setAttribute("data-bs-theme", "dark");
+            icon.classList.replace("fa-moon", "fa-sun");
+            localStorage.setItem("theme", "dark");
+          }
+        });
+
+        // Add interactivity to recipient tags
+        const recipientTags = document.querySelectorAll(
+          "#recipientTags .tag .close"
+        );
+        recipientTags.forEach((tag) => {
+          tag.addEventListener("click", function () {
+            this.parentElement.remove();
+          });
+        });
+
+        // Add hover effect to feature cards
+        const featureCards = document.querySelectorAll(".card-hover");
+        featureCards.forEach((card) => {
+          card.addEventListener("mouseenter", function () {
+            this.classList.add("shadow-lg");
+          });
+          card.addEventListener("mouseleave", function () {
+            this.classList.remove("shadow-lg");
+          });
+        });
+
+        // Nav pills interactivity
+        const navPills = document.querySelectorAll(".nav-pill");
+        navPills.forEach((pill) => {
+          pill.addEventListener("click", function () {
+            navPills.forEach((p) => p.classList.remove("active"));
+            this.classList.add("active");
+          });
+        });
+
+        // Simulate AI subject generation functionality
+        const generateSubjectBtn = document.getElementById("generateSubject");
+        if (generateSubjectBtn) {
+          generateSubjectBtn.addEventListener("click", function () {
+            const subjectInput = document.getElementById("subject");
+            subjectInput.value =
+              "Professional Meeting Request: Next Steps for Project Collaboration";
+
+            // Show a toast notification
+            toast("AI-generated subject applied!", "success");
+          });
+        }
+
+        // Format text button functionality
+        const formatTextBtn = document.getElementById("formatText");
+        if (formatTextBtn) {
+          formatTextBtn.addEventListener("click", function () {
+            const textArea = document.getElementById("tbody");
+            if (textArea.value.trim() !== "") {
+              // Add proper spacing and format
+              const formattedText = textArea.value
+                .replace(/([.!?])\s*(?=[A-Z])/g, "$1\n\n")
+                .replace(/^(Dear|Hello|Hi)(.+)$/m, "$1$2,\n\n")
+                .replace(/^(Sincerely|Best|Regards|Thanks)(.*)$/m, "\n$1$2");
+
+              textArea.value = formattedText;
+              adjustTextareaHeight("tbody");
+
+              // Show toast notification
+              toast("Text formatted!", "info");
+            }
+          });
+        }
+
+        // Simple toast notification function
+        window.toast = function (message, type = "info") {
+          const toast = document.createElement("div");
+          toast.className = `toast-notification toast-${type}`;
+          toast.textContent = message;
+
+          document.body.appendChild(toast);
+
+          // Trigger animation
+          setTimeout(() => {
+            toast.classList.add("show");
+          }, 10);
+
+          // Remove after 3 seconds
+          setTimeout(() => {
+            toast.classList.remove("show");
+            setTimeout(() => {
+              document.body.removeChild(toast);
+            }, 300);
+          }, 3000);
+        };
+
+        // Make all tabs clickable and functional
+        document.querySelectorAll("#myTab .nav-link").forEach((tab) => {
+          tab.addEventListener("click", function () {
+            const targetId = this.getAttribute("data-bs-target").substring(1);
+            setActiveTab(
+              targetId === "text"
+                ? "text"
+                : targetId === "html"
+                ? "html"
+                : "markdown"
+            );
+          });
+        });
+
+        // Ensure preview button works
+        const previewButton = document.querySelector(".btn-preview");
+        if (previewButton) {
+          previewButton.addEventListener("click", displayPreview);
+        }
+
+        // Directly connect the Send button
+        var sendButton = document.getElementById("sendButton");
+        console.log("Send button found in HTML script:", sendButton);
+
+        if (sendButton) {
+          sendButton.onclick = function (e) {
+            e.preventDefault();
+            console.log("Send button clicked from direct HTML onclick handler");
+            if (typeof window.submitForm === "function") {
+              window.submitForm();
+            } else {
+              console.error("submitForm function not found!");
+              alert(
+                "Error: submitForm function not found. Please check browser console."
+              );
+            }
+            return false;
+          };
+        } else {
+          console.error("Could not find send button in HTML script!");
+        }
+      });
+
+      // Backup window.onload to ensure button works
+      window.onload = function () {
+        console.log("Window loaded, checking send button");
+        var sendButton = document.getElementById("sendButton");
+
+        if (sendButton && !sendButton._hasClickHandler) {
+          console.log("Adding backup click handler to send button");
+          sendButton._hasClickHandler = true;
+          sendButton.addEventListener("click", function (e) {
+            e.preventDefault();
+            console.log("Send button clicked from window.onload handler");
+            if (typeof window.submitForm === "function") {
+              window.submitForm();
+            } else {
+              console.error("submitForm function not found in window.onload!");
+              alert(
+                "Error: submitForm function not found. Please check browser console."
+              );
+            }
+            return false;
+          });
+        }
+      };
+    </script>
+  </body>
 </html>

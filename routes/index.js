@@ -1,12 +1,9 @@
-import express from "express";
+import express from 'express';
+import emailController from '../controllers/emailcontroller.js';
+import { upload } from '../services/Emailservice.js';
 
 const router = express.Router();
 
-import emailController from "../controllers/emailcontroller.js";
-
-import { storage } from ".././Emailservice.js";
-import { upload } from ".././Emailservice.js";
-
-router.post('/send-email', upload.any('attachment'), emailController.sendEmailController);
+router.post('/submit', upload.array('attachments'), emailController.sendEmailController);
 
 export default router;
