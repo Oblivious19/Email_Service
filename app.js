@@ -1,17 +1,33 @@
-import express from 'express';
-import emailController from './Controllers/emailcontroller.js';
-import { upload } from './services/Emailservice.js';  // Import the upload middleware
+import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import bodyParser from "body-parser";
-import multer from "multer";
-import dotenv from 'dotenv';
-
-// Load environment variables
-dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Load environment variables first
+dotenv.config();
+
+// Log environment variables for debugging
+console.log('Environment variables loaded:', {
+  SMTP_HOST: process.env.SMTP_HOST,
+  SMTP_PORT: process.env.SMTP_PORT,
+  SMTP_USER: process.env.SMTP_USER,
+  SMTP_PASS: process.env.SMTP_PASS ? '***' : undefined,
+  USE_ENV_VARS: process.env.USE_ENV_VARS,
+  USE_MOCK_TRANSPORT: process.env.USE_MOCK_TRANSPORT
+});
+
+// Import other dependencies after environment variables are loaded
+import express from 'express';
+import emailController from './Controllers/emailcontroller.js';
+import { upload, initializeTransporter } from './services/Emailservice.js';
+import bodyParser from "body-parser";
+import multer from "multer";
+
+// Initialize email service
+console.log('Initializing email service...');
+await initializeTransporter();
 
 const app = express();
 app.use(express.json());
@@ -28,27 +44,10 @@ app.post('/submit', upload.array('attachments'), emailController.sendEmailContro
 // For Vercel serverless deployment, we don't need to listen to a port
 // This is only needed for local development
 if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
-  const port = process.env.PORT || 3000;
-  const startServer = () => {
-    // Check if port is already in use to avoid infinite loop
-    const server = app.listen(port, () => {
-      console.log(`Server is running on port: ${port}`);
-    });
-
-    server.on('error', (e) => {
-      if (e.code === 'EADDRINUSE') {
-        console.log(`Port ${port} is already in use. Trying port ${parseInt(port) + 1}...`);
-        // Try the next port (ensure it's a number)
-        process.env.PORT = parseInt(port) + 1;
-        server.close();
-        startServer();
-      } else {
-        console.error('Server error:', e);
-      }
-    });
-  };
-
-  startServer();
+  const port = 3005;
+  app.listen(port, () => {
+    console.log(`Server is running on port: ${port}`);
+  });
 }
 
 // Export the Express API for Vercel

@@ -1,4 +1,136 @@
 var activeTab = 'text';
+var isSubmitting = false;  // Global submission state
+
+// Initialize help modal
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Bootstrap modal for help
+    const helpModal = new bootstrap.Modal(document.getElementById('helpModal'), {
+        keyboard: true,
+        backdrop: true,
+        focus: true
+    });
+
+    // Add click handler for help button
+    const helpButton = document.querySelector('[data-bs-target="#helpModal"]');
+    if (helpButton) {
+        helpButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            helpModal.show();
+        });
+    }
+});
+
+// Make submitForm globally accessible
+window.submitForm = function() {
+    return new Promise(async (resolve, reject) => {
+        const emailForm = document.getElementById('emailForm');
+        if (!emailForm) {
+            reject(new Error("Form elements not found"));
+            return;
+        }
+        
+        // Show loading overlay
+        const loader = document.getElementById("loader-overlay");
+        if (loader) {
+            loader.style.display = "flex";
+        }
+
+        try {
+            // Create form data
+            const formData = new FormData(emailForm);
+            
+            // Get recipient tags if present
+            const recipientTags = document.querySelectorAll('#recipientTags .tag');
+            if (recipientTags.length > 0) {
+                const recipients = Array.from(recipientTags).map(tag => {
+                    return tag.textContent.trim().replace(' ×', '').replace(/\s*close$/, '');
+                }).join(',');
+                formData.set('to', recipients);
+            }
+
+            // Get the to field directly if no tags
+            const toField = document.getElementById('to');
+            if (toField && toField.value && !formData.get('to')) {
+                formData.set('to', toField.value);
+            }
+
+            // Send the email via AJAX
+            const response = await fetch('/submit', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.text();
+            
+            // Show success message
+            let successMsg = 'Email sent successfully!';
+            if (data.includes('via SendGrid')) {
+                successMsg = 'Email sent via SendGrid!';
+            } else if (data.includes('via Mailgun')) {
+                successMsg = 'Email sent via Mailgun!';
+            } else if (data.includes('via Gmail')) {
+                successMsg = 'Email sent via Gmail!';
+            }
+            
+            toast(successMsg, 'success');
+            
+            // Reset form
+            emailForm.reset();
+            
+            // Clear recipient tags
+            const recipientTagsContainer = document.getElementById('recipientTags');
+            if (recipientTagsContainer) {
+                recipientTagsContainer.innerHTML = '';
+            }
+            
+            // Clear attachments
+            const attachmentList = document.getElementById('attachmentList');
+            if (attachmentList) {
+                attachmentList.innerHTML = '';
+            }
+            
+            // Clear provider selection
+            document.querySelectorAll('.smtp-option').forEach(c => {
+                c.classList.remove('border-primary');
+                const button = c.querySelector('button');
+                if (button) {
+                    button.classList.remove('btn-primary');
+                    button.classList.add('btn-outline-primary');
+                }
+            });
+            
+            // Remove provider field
+            const providerField = document.getElementById('smtpProvider');
+            if (providerField) {
+                providerField.remove();
+            }
+            
+            // Reset textarea heights
+            ['tbody', 'htmlB', 'mdB'].forEach(id => {
+                const textarea = document.getElementById(id);
+                if (textarea) {
+                    textarea.style.height = "";
+                    textarea.style.height = Math.min(300, textarea.scrollHeight) + "px";
+                }
+            });
+
+            resolve();
+        } catch (error) {
+            // Show error message
+            toast('Failed to send email: ' + error.message, 'error');
+            reject(error);
+        } finally {
+            // Hide loading overlay
+            if (loader) {
+                loader.style.display = "none";
+            }
+        }
+    });
+};
 
 function setActiveTab(tab) {
     activeTab = tab;
@@ -154,12 +286,14 @@ function addRecipientTag(email) {
     
     tag.querySelector('.close').addEventListener('click', function() {
         tag.remove();
-        toggleSendButton();
+        toggleSendButton(); // Call the global toggleSendButton function
     });
     
     recipientTags.appendChild(tag);
-    
     document.getElementById('to').value = '';
+    
+    // Update send button state
+    toggleSendButton();
 }
 
 function addAttachment(file) {
@@ -169,7 +303,7 @@ function addAttachment(file) {
     if (!attachmentList) return;
     
     const item = document.createElement('div');
-    item.className = 'attachment-item d-flex align-items-center p-2 rounded mb-2';
+    item.className = 'p-2 mb-2 rounded attachment-item d-flex align-items-center';
     item.style.backgroundColor = 'var(--gray-100)';
     
     let iconClass = 'fas fa-file text-secondary';
@@ -318,42 +452,41 @@ document.addEventListener("DOMContentLoaded", function() {
     const sendButton = document.getElementById('sendButton');
 
     if (emailForm && toField && subjectField && sendButton) {
-        function toggleSendButton() {
-            if (toField.value.trim() !== '' || document.querySelectorAll('#recipientTags .tag').length > 0) {
-                if (subjectField.value.trim() !== '') {
-                    sendButton.disabled = false;
-                    sendButton.classList.remove('btn-light');
-                    sendButton.classList.add('btn-primary');
-                    return;
-                }
-            } 
+        window.toggleSendButton = function() {
+            const hasRecipient = toField.value.trim() !== '' || document.querySelectorAll('#recipientTags .tag').length > 0;
+            const hasSubject = subjectField.value.trim() !== '';
             
-            sendButton.disabled = true;
-            sendButton.classList.remove('btn-primary');
-            sendButton.classList.add('btn-light');
+            if (hasRecipient && hasSubject && !isSubmitting) {
+                sendButton.disabled = false;
+                sendButton.classList.remove('btn-light');
+                sendButton.classList.add('btn-primary');
+            } else {
+                sendButton.disabled = true;
+                sendButton.classList.remove('btn-primary');
+                sendButton.classList.add('btn-light');
+            }
         }
 
-        toggleSendButton();
-
+        // Add input event listeners
         toField.addEventListener('input', toggleSendButton);
         subjectField.addEventListener('input', toggleSendButton);
 
+        // Add recipient button handling
         const addRecipientButton = document.getElementById('addRecipient');
         if (addRecipientButton) {
             addRecipientButton.addEventListener('click', function() {
                 const email = toField.value.trim();
                 if (email) {
                     addRecipientTag(email);
-                    toggleSendButton();
                 }
             });
         }
         
+        // Enter key handling for recipient field
         toField.addEventListener('keypress', function(e) {
             if (e.key === 'Enter' && toField.value.trim()) {
                 e.preventDefault();
                 addRecipientTag(toField.value.trim());
-                toggleSendButton();
             }
         });
         
@@ -363,30 +496,50 @@ document.addEventListener("DOMContentLoaded", function() {
                 spellCheck();
             });
         }
-        
-        // Get the send button and add a click event listener
-        console.log("Send button found:", sendButton); // Debug log
-        
-        if (sendButton) {
-            sendButton.addEventListener('click', function(event) {
-                console.log("Send button clicked"); // Debug log
+
+        // Prevent any form submissions
+        emailForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        });
+
+        // Single click handler for send button
+        function handleSubmit(event) {
+            if (event) {
                 event.preventDefault();
-                window.submitForm(); // Call the global submitForm function
-            });
-        } else {
-            console.error("Send button not found"); // Error if button not found
+                event.stopPropagation();
+            }
+
+            if (isSubmitting || sendButton.disabled) {
+                console.log('Preventing duplicate submission');
+                return false;
+            }
+
+            console.log('Handling submit');
+            isSubmitting = true;
+            toggleSendButton();
+            
+            window.submitForm()
+                .catch(error => console.error('Form submission error:', error))
+                .finally(() => {
+                    console.log('Submission complete');
+                    isSubmitting = false;
+                    toggleSendButton();
+                });
+
+            return false;
         }
+
+        // Remove all existing click listeners from send button
+        const newSendButton = sendButton.cloneNode(true);
+        sendButton.parentNode.replaceChild(newSendButton, sendButton);
         
-        // Also handle form submission events correctly
-        if (emailForm) {
-            emailForm.addEventListener('submit', function(event) {
-                console.log("Form submitted"); // Debug log
-                event.preventDefault();
-                window.submitForm(); // Call the global submitForm function
-            });
-        } else {
-            console.error("Email form not found"); // Error if form not found
-        }
+        // Add single click listener to the new button
+        newSendButton.addEventListener('click', handleSubmit);
+
+        // Initial button state
+        toggleSendButton();
         
         // Prevent form submission on attachments upload
         const attachmentsInput = document.getElementById('attachments');
@@ -481,200 +634,3 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
-
-// Define submitForm in the global scope for direct access
-window.submitForm = function() {
-    console.log("======= SUBMIT FORM FUNCTION CALLED ======="); // Explicit debug log
-    alert("Email sending initiated - check console for details"); // Visible alert for debugging
-    
-    const emailForm = document.getElementById('emailForm');
-    if (!emailForm) {
-        console.error("Email form not found");
-        alert("Error: Email form not found");
-        return;
-    }
-    
-    // Show loading overlay
-    const loader = document.getElementById("loader-overlay");
-    if (loader) {
-        loader.style.display = "flex";
-        console.log("Loading overlay displayed");
-    }
-
-    // Create form data
-    const formData = new FormData(emailForm);
-    
-    // Log form data for debugging
-    console.log("Form data being sent:");
-    for (let pair of formData.entries()) {
-        console.log(pair[0] + ': ' + pair[1]);
-    }
-
-    // Get recipient tags if present
-    const recipientTags = document.querySelectorAll('#recipientTags .tag');
-    if (recipientTags.length > 0) {
-        const recipients = Array.from(recipientTags).map(tag => {
-            return tag.textContent.trim().replace(' ×', '').replace(/\s*close$/, '');
-        }).join(',');
-        
-        formData.set('to', recipients);
-        console.log("Recipients set from tags:", recipients);
-    }
-
-    // Get the to field directly
-    const toField = document.getElementById('to');
-    if (toField && toField.value && !formData.get('to')) {
-        formData.set('to', toField.value);
-        console.log("To field set directly:", toField.value);
-    }
-
-    // Check if custom SMTP is selected
-    const smtpProvider = formData.get('smtpProvider');
-    console.log("Selected SMTP provider:", smtpProvider || "default Gmail");
-    
-    if (smtpProvider === 'custom') {
-        // Hide loader
-        if (loader) {
-            loader.style.display = "none";
-        }
-        
-        // Show modal with notice
-        const modalContent = document.getElementById('modalContent');
-        if (modalContent) {
-            modalContent.innerHTML = `
-                <div class="alert alert-info">
-                    <h5><i class="fas fa-info-circle me-2"></i>Custom SMTP Coming Soon</h5>
-                    <p>The custom SMTP option is currently in development.</p>
-                    <p>Your email will be sent using the default Gmail provider for now.</p>
-                    <p>Please select SendGrid or Mailgun if you would like to use an alternative provider.</p>
-                </div>
-            `;
-            const modal = new bootstrap.Modal(document.getElementById('contentModal'));
-            modal.show();
-        }
-        
-        // Fall back to default
-        formData.set('smtpProvider', 'gmail');
-    }
-
-    console.log("Sending form data via AJAX to /submit endpoint");
-    
-    // Send the email via AJAX
-    fetch('/submit', {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => {
-        console.log("Received response:", response.status, response.statusText);
-        
-        // Hide loading overlay
-        if (loader) {
-            loader.style.display = "none";
-            console.log("Loading overlay hidden after response");
-        }
-        
-        // Process the response
-        return response.text().then(data => {
-            console.log("Response data:", data);
-            
-            if (response.ok) {
-                // Show success message
-                let successMsg = 'Email sent successfully!';
-                if (data && data.includes('via SendGrid')) {
-                    successMsg = 'Email sent via SendGrid!';
-                } else if (data && data.includes('via Mailgun')) {
-                    successMsg = 'Email sent via Mailgun!';
-                } else if (data && data.includes('via Gmail')) {
-                    successMsg = 'Email sent via Gmail!';
-                }
-                
-                console.log("Success message:", successMsg);
-                
-                // Call toast function 
-                if (window.toast) {
-                    window.toast(successMsg, 'success');
-                } else {
-                    alert(successMsg);
-                }
-                
-                // Reset the form
-                emailForm.reset();
-                console.log("Form reset");
-                
-                // Clear recipient tags
-                const recipientTagsContainer = document.getElementById('recipientTags');
-                if (recipientTagsContainer) {
-                    recipientTagsContainer.innerHTML = '';
-                    console.log("Recipient tags cleared");
-                }
-                
-                // Clear attachments
-                const attachmentList = document.getElementById('attachmentList');
-                if (attachmentList) {
-                    attachmentList.innerHTML = '';
-                    console.log("Attachment list cleared");
-                }
-                
-                // Clear provider selection
-                document.querySelectorAll('.smtp-option').forEach(c => {
-                    c.classList.remove('border-primary');
-                    const button = c.querySelector('button');
-                    if (button) {
-                        button.classList.remove('btn-primary');
-                        button.classList.add('btn-outline-primary');
-                    }
-                });
-                console.log("Provider selection cleared");
-                
-                // Remove provider field
-                const providerField = document.getElementById('smtpProvider');
-                if (providerField) {
-                    providerField.remove();
-                    console.log("Provider field removed");
-                }
-                
-                // Adjust textarea heights
-                const textareas = ['tbody', 'htmlB', 'mdB'];
-                textareas.forEach(id => {
-                    const textarea = document.getElementById(id);
-                    if (textarea) {
-                        textarea.style.height = "";
-                        textarea.style.height = Math.min(300, textarea.scrollHeight) + "px";
-                    }
-                });
-                console.log("Textarea heights adjusted");
-            } else {
-                // Show error message
-                const errorMsg = data || 'Failed to send email';
-                console.error("Error sending email:", errorMsg);
-                
-                if (window.toast) {
-                    window.toast(errorMsg, 'error');
-                } else {
-                    alert("Error: " + errorMsg);
-                }
-                
-                throw new Error(errorMsg);
-            }
-        });
-    })
-    .catch(error => {
-        console.error('Error sending email:', error);
-        
-        // Hide loading overlay
-        if (loader) {
-            loader.style.display = "none";
-            console.log("Loading overlay hidden after error");
-        }
-        
-        // Show error message
-        const errorMsg = 'Failed to send email: ' + error.message;
-        console.error(errorMsg);
-        
-        if (window.toast) {
-            window.toast(errorMsg, 'error');
-        } else {
-            alert(errorMsg);
-        }
-    });
-};

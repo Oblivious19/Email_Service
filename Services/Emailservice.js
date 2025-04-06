@@ -12,33 +12,78 @@ let _transporter = null;
 let _sendGridTransporter = null;
 let _mailgunTransporter = null;
 
+export function initializeEmailService() {
+  console.log('Initializing email service with config:', {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS ? '***' : undefined
+  });
+  
+  // Create the transporter
+  getTransporter();
+}
+
 // Create a Gmail transporter
-export function getTransporter() {
+export async function getTransporter() {
   if (!_transporter) {
     // Check if we should use mock
     if (process.env.USE_MOCK_TRANSPORT === 'true' || 
         (process.env.VERCEL === '1' && process.env.NODE_ENV !== 'production')) {
       console.log('Using mock transport (environment determined)');
-      return createMockTransport();
+      _transporter = createMockTransport();
+      return _transporter;
     }
     
     // Create real transporter
+    const smtpUser = process.env.SMTP_USER;
+    const smtpPass = process.env.SMTP_PASS;
+    
+    if (!smtpUser || !smtpPass) {
+      console.error('Missing SMTP credentials. Check your .env file.');
+      _transporter = createMockTransport();
+      return _transporter;
+    }
+    
+    console.log('Creating Gmail transport with:', {
+      user: smtpUser,
+      host: 'smtp.gmail.com',
+      port: 587
+    });
+    
     _transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || 'smtp.gmail.com',
-      port: parseInt(process.env.SMTP_PORT || '587'),
-      secure: process.env.SMTP_SECURE === 'true',
+      host: 'smtp.gmail.com',
+      port: 587,
+      secure: false,
       auth: {
-        user: process.env.SMTP_USER || 'your-email@gmail.com',
-        pass: process.env.SMTP_PASS || 'your-app-password'
+        user: smtpUser.trim(),
+        pass: smtpPass.trim()
+      },
+      tls: {
+        rejectUnauthorized: true,
+        minVersion: "TLSv1.2"
       }
     });
+
+    // Verify connection configuration
+    try {
+      await _transporter.verify();
+      console.log('✓ SMTP connection verified successfully');
+    } catch (error) {
+      console.error('SMTP Verification Error:', {
+        code: error.code,
+        command: error.command,
+        response: error.response,
+        responseCode: error.responseCode
+      });
+      console.log('Falling back to mock transport due to verification error');
+      _transporter = createMockTransport();
+    }
   }
   
   return _transporter;
 }
 
-// Export the transporter
-export const transporter = getTransporter();
+// Export the transporter initialization function instead of the instance
+export const initializeTransporter = () => getTransporter();
 
 // Create SendGrid transporter
 export function createSendGridTransport() {
@@ -101,7 +146,6 @@ export function createMockTransport() {
   console.log('Creating mock transport for testing');
   return {
     sendMail: (mailOptions, callback) => {
-      // Log the email content for debugging
       console.log('🔵 MOCK EMAIL SENT');
       console.log('===================');
       console.log('From:', mailOptions.from);
@@ -113,38 +157,61 @@ export function createMockTransport() {
       }
       console.log('===================');
       
-      // Simulate a delay to mimic actual email sending
       setTimeout(() => {
-        const info = {
+        callback(null, {
           messageId: `mock-email-${Date.now()}@localhost`,
-          envelope: {
-            from: mailOptions.from,
-            to: mailOptions.to
-          },
+          envelope: { from: mailOptions.from, to: mailOptions.to },
           accepted: [mailOptions.to],
           rejected: [],
           pending: [],
           response: 'Mock email sent successfully'
-        };
-        
-        callback(null, info);
-      }, 500); // 500ms delay
-    }
+        });
+      }, 100);
+    },
+    verify: (callback) => callback(null, true),
+    options: { mock: true }
   };
 }
 
 // Send email function with error handling
-export function sendEmail(mailOptions) {
-  return new Promise((resolve, reject) => {
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        console.error('Error sending email:', error);
-        reject(error);
-        return;
-      }
-      
-      console.log('Email sent:', info.messageId);
-      resolve(info);
-    });
+export async function sendEmail(mailOptions) {
+  const transport = await getTransporter();
+  
+  console.log('Sending email with:', {
+    from: mailOptions.from,
+    to: mailOptions.to,
+    subject: mailOptions.subject,
+    hasAttachments: !!mailOptions.attachments,
+    transportType: transport.options?.mock ? 'mock' : 'gmail'
   });
+
+  try {
+    const info = await new Promise((resolve, reject) => {
+      transport.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          console.error('Error sending email:', error);
+          reject(error);
+          return;
+        }
+        resolve(info);
+      });
+    });
+
+    console.log('Email sent successfully:', {
+      messageId: info.messageId,
+      response: info.response,
+      accepted: info.accepted,
+      rejected: info.rejected
+    });
+
+    return info;
+  } catch (error) {
+    console.error('Failed to send email:', {
+      code: error.code,
+      command: error.command,
+      response: error.response,
+      responseCode: error.responseCode
+    });
+    throw error;
+  }
 }
