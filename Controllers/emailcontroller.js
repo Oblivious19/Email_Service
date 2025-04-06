@@ -9,7 +9,9 @@ async function sendEmailController(req, res) {
       to: req.body.to,
       subject: req.body.subject,
       hasContent: !!req.body.tbody,
-      attachments: req.files ? req.files.length : 0
+      attachments: req.files ? req.files.length : 0,
+      environment: process.env.NODE_ENV,
+      isVercel: process.env.VERCEL === '1'
     });
 
     // Check for required fields
@@ -51,6 +53,15 @@ async function sendEmailController(req, res) {
       });
     }
 
+    // Verify SMTP configuration
+    if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+      console.error('❌ Missing SMTP credentials');
+      return res.status(500).json({
+        error: 'Configuration error',
+        message: 'SMTP credentials are not configured. Please check environment variables.'
+      });
+    }
+
     // Construct mail options
     const mailOptions = {
       from: fromAddress,
@@ -67,7 +78,8 @@ async function sendEmailController(req, res) {
         from: fromAddress,
         to,
         subject,
-        hasAttachments: attachments.length > 0
+        hasAttachments: attachments.length > 0,
+        smtpConfigured: !!process.env.SMTP_USER && !!process.env.SMTP_PASS
       });
 
       const info = await sendEmail(mailOptions);

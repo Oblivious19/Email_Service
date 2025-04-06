@@ -20,7 +20,8 @@ console.log('Environment variables loaded:', {
   SMTP_PASS: process.env.SMTP_PASS ? '✓' : '✗',
   USE_ENV_VARS: process.env.USE_ENV_VARS,
   USE_MOCK_TRANSPORT: process.env.USE_MOCK_TRANSPORT,
-  NODE_ENV: process.env.NODE_ENV
+  NODE_ENV: process.env.NODE_ENV,
+  IS_VERCEL: process.env.VERCEL === '1'
 });
 
 // Configure multer for file uploads
@@ -31,7 +32,7 @@ const upload = multer({
     fileSize: 10 * 1024 * 1024, // 10MB limit
     files: 5 // Maximum 5 files
   }
-}).array('attachments');
+});
 
 // Create Express app
 const app = express();
@@ -50,7 +51,11 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, 'public')));
+
+// Serve static files only in development
+if (process.env.NODE_ENV !== 'production') {
+  app.use(express.static(path.join(__dirname, 'public')));
+}
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -63,24 +68,42 @@ app.use((err, req, res, next) => {
 
 // Routes
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  if (process.env.NODE_ENV === 'production') {
+    res.json({ status: 'Email service is running' });
+  } else {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  }
 });
 
 // Handle file upload and email submission
 app.post('/submit', (req, res, next) => {
-  upload(req, res, (err) => {
+  const handleUpload = upload.array('attachments');
+  
+  handleUpload(req, res, async (err) => {
     if (err instanceof multer.MulterError) {
+      console.error('Multer error:', err);
       return res.status(400).json({
         error: 'File upload error',
         message: err.message
       });
     } else if (err) {
+      console.error('Upload error:', err);
       return res.status(500).json({
         error: 'Server error',
         message: 'An error occurred while processing the file upload'
       });
     }
-    emailController.sendEmailController(req, res, next);
+
+    try {
+      await emailController.sendEmailController(req, res, next);
+    } catch (error) {
+      console.error('Controller error:', error);
+      return res.status(500).json({
+        error: 'Server error',
+        message: 'An error occurred while processing your request',
+        details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      });
+    }
   });
 });
 
@@ -100,4 +123,5 @@ if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
   });
 }
 
+// Export the Express app
 export default app;
