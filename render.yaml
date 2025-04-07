@@ -3,7 +3,7 @@ services:
     name: email-service
     env: node
     buildCommand: npm install
-    startCommand: node src/app.js
+    startCommand: node src/debug.js
     envVars:
       - key: NODE_ENV
         value: production
