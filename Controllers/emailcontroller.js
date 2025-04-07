@@ -137,4 +137,4 @@ async function sendEmailController(req, res) {
   }
 }
 
-export default { sendEmailController };  
+export default { sendEmailController }; 

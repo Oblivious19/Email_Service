@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: email-service
+    env: node
+    buildCommand: npm install
+    startCommand: node app.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+    headers:
+      - path: /*
+        name: Access-Control-Allow-Origin
+        value: "*"
+    routes:
+      - type: rewrite
+        source: /*
+        destination: / 

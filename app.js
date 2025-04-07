@@ -4,7 +4,7 @@ import { fileURLToPath } from 'url';
 import express from 'express';
 import cors from 'cors';
 import multer from 'multer';
-import emailController from './controllers/emailcontroller.js';
+import emailController from './controllers/emailController.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
