@@ -4,7 +4,7 @@ import { fileURLToPath } from 'url';
 import express from 'express';
 import cors from 'cors';
 import multer from 'multer';
-import emailController from './controllers/emailController.js';
+import { sendEmailController } from './controllers/emailController.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -95,7 +95,7 @@ app.post('/submit', (req, res) => {
         throw new Error('Missing required fields');
       }
 
-      await emailController.sendEmailController(req, res);
+      await sendEmailController(req, res);
     } catch (error) {
       console.error('Controller error:', error);
       return res.status(500).json({
