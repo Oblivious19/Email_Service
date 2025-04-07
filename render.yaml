@@ -6,7 +6,7 @@ services:
       npm ci
       chmod +x start.sh
       echo "Build completed successfully"
-    startCommand: node src/app.js
+    startCommand: node app.js
     envVars:
       - key: NODE_ENV
         value: production
