@@ -37,10 +37,15 @@ const upload = multer({
 // Create Express app
 const app = express();
 
-// CORS configuration
-app.use(cors());
+// Basic CORS configuration
+app.use(cors({
+  origin: true,
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type'],
+  credentials: true
+}));
 
-// Body parsing middleware
+// Body parsing middleware with limits
 app.use(express.json({ limit: '5mb' }));
 app.use(express.urlencoded({ extended: true, limit: '5mb' }));
 
@@ -59,8 +64,14 @@ app.post('/submit', (req, res) => {
   console.log('Submit endpoint hit:', {
     method: req.method,
     contentType: req.headers['content-type'],
-    size: req.headers['content-length']
+    size: req.headers['content-length'],
+    isVercel: process.env.VERCEL === '1'
   });
+
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
 
   upload(req, res, async (err) => {
     if (err instanceof multer.MulterError) {
@@ -105,17 +116,18 @@ app.use((err, req, res, next) => {
   });
 });
 
-// For local development
+// For local development only
 if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
-  app.use(express.static(path.join(__dirname, 'public')));
+  app.use(express.static('public'));
   app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
   });
   
   const port = process.env.PORT || 3005;
   app.listen(port, () => {
-    console.log(`Server is running on port: ${port}`);
+    console.log(`Server running on port ${port}`);
   });
 }
 
+// Export the Express app for Vercel
 export default app;

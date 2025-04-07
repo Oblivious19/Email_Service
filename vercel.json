@@ -12,24 +12,24 @@
   ],
   "routes": [
     {
-      "src": "/submit",
-      "methods": ["POST", "OPTIONS"],
-      "dest": "/app.js"
+      "src": "/api/(.*)",
+      "dest": "app.js"
     },
     {
-      "src": "/api/(.*)",
-      "dest": "/app.js"
+      "src": "/submit",
+      "methods": ["POST", "OPTIONS"],
+      "dest": "app.js"
     },
     {
       "src": "/favicon.ico",
-      "dest": "/public/favicon.ico"
+      "dest": "public/favicon.ico"
     },
     {
       "handle": "filesystem"
     },
     {
       "src": "/(.*)",
-      "dest": "/public/$1"
+      "dest": "public/index.html"
     }
   ],
   "env": {
