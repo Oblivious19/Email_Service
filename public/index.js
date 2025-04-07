@@ -20,6 +20,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+// Get base URL for API calls
+const getBaseUrl = () => {
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        return '';
+    }
+    return 'https://email-service-mauve-ten.vercel.app';
+};
+
 // Make submitForm globally accessible
 window.submitForm = async function(form) {
     if (isSubmitting) {
@@ -56,10 +64,11 @@ window.submitForm = async function(form) {
             to: formData.get('to'),
             subject: formData.get('subject'),
             hasContent: !!formData.get('tbody'),
-            attachments: formData.getAll('attachments').length
+            attachments: formData.getAll('attachments').length,
+            baseUrl: getBaseUrl()
         });
 
-        const response = await fetch('/submit', {
+        const response = await fetch(`${getBaseUrl()}/submit`, {
             method: 'POST',
             body: formData,
             headers: {
