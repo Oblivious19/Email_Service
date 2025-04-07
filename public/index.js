@@ -61,7 +61,10 @@ window.submitForm = async function(form) {
 
         const response = await fetch('/submit', {
             method: 'POST',
-            body: formData
+            body: formData,
+            headers: {
+                'Accept': 'application/json'
+            }
         });
 
         let result;

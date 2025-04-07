@@ -39,20 +39,19 @@ const app = express();
 
 // CORS configuration with more specific options
 const corsOptions = {
-  origin: process.env.VERCEL ? [
-    'https://email-service-mauve-ten.vercel.app',
-    'https://email-service-oblivious19.vercel.app'
-  ] : '*',
+  origin: '*',
   methods: ['POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true,
-  maxAge: 86400 // 24 hours
+  allowedHeaders: ['Content-Type'],
+  credentials: true
 };
 
 // Middleware
 app.use(cors(corsOptions));
 app.use(express.json({ limit: '5mb' }));
 app.use(express.urlencoded({ extended: true, limit: '5mb' }));
+
+// Add OPTIONS handler for preflight requests
+app.options('/submit', cors(corsOptions));
 
 // API health check endpoint
 app.get('/api/health', (req, res) => {

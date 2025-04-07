@@ -14,29 +14,18 @@
     {
       "src": "/submit",
       "methods": ["POST", "OPTIONS"],
-      "dest": "app.js",
-      "headers": {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization",
-        "Access-Control-Allow-Credentials": "true",
-        "Access-Control-Max-Age": "86400"
-      }
+      "dest": "app.js"
     },
     {
       "src": "/api/(.*)",
       "dest": "app.js"
     },
     {
-      "src": "/favicon.ico",
-      "dest": "public/favicon.ico"
-    },
-    {
       "handle": "filesystem"
     },
     {
       "src": "/(.*)",
-      "dest": "public/index.html"
+      "dest": "/public/$1"
     }
   ],
   "env": {
