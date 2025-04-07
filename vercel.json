@@ -14,24 +14,29 @@
     {
       "src": "/submit",
       "methods": ["POST", "OPTIONS"],
-      "dest": "/app.js",
+      "dest": "app.js",
       "headers": {
-        "Access-Control-Allow-Origin": "https://email-service-mauve-ten.vercel.app",
+        "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "POST, OPTIONS",
         "Access-Control-Allow-Headers": "Content-Type, Authorization",
-        "Access-Control-Allow-Credentials": "true"
+        "Access-Control-Allow-Credentials": "true",
+        "Access-Control-Max-Age": "86400"
       }
     },
     {
       "src": "/api/(.*)",
-      "dest": "/app.js"
+      "dest": "app.js"
+    },
+    {
+      "src": "/favicon.ico",
+      "dest": "public/favicon.ico"
     },
     {
       "handle": "filesystem"
     },
     {
-      "src": "/.*",
-      "dest": "/public/index.html"
+      "src": "/(.*)",
+      "dest": "public/index.html"
     }
   ],
   "env": {
@@ -41,7 +46,7 @@
     "app.js": {
       "memory": 1024,
       "maxDuration": 10,
-      "includeFiles": ["controllers/**"]
+      "includeFiles": "controllers/**/*"
     }
   }
 } 

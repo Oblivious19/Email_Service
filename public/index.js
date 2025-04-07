@@ -27,9 +27,10 @@ window.submitForm = async function(form) {
         return;
     }
 
+    const sendButton = document.getElementById('sendButton');
+    
     try {
         isSubmitting = true;
-        const sendButton = document.getElementById('sendButton');
         sendButton.disabled = true;
         sendButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Sending...';
 
@@ -39,6 +40,14 @@ window.submitForm = async function(form) {
         const activeContent = activeTab === 'text' ? document.getElementById('tbody').value :
                             activeTab === 'html' ? document.getElementById('htmlB').value :
                             document.getElementById('mdB').value;
+        
+        // Validate required fields
+        const to = formData.get('to');
+        const subject = formData.get('subject');
+        
+        if (!to || !subject || !activeContent) {
+            throw new Error('Please fill in all required fields (To, Subject, and Message)');
+        }
         
         // Update the form data with the active content
         formData.set('tbody', activeContent);
@@ -56,23 +65,13 @@ window.submitForm = async function(form) {
         });
 
         let result;
+        const text = await response.text();
+        
         try {
-            const text = await response.text();
-            try {
-                result = JSON.parse(text);
-            } catch (e) {
-                console.error('Failed to parse response as JSON:', text);
-                result = { 
-                    error: 'Server Error',
-                    message: 'The server returned an invalid response. Please try again.'
-                };
-            }
+            result = JSON.parse(text);
         } catch (e) {
-            console.error('Failed to read response:', e);
-            result = { 
-                error: 'Network Error',
-                message: 'Failed to read server response. Please try again.'
-            };
+            console.error('Failed to parse response as JSON:', text);
+            throw new Error('The server returned an invalid response. Please try again.');
         }
 
         if (!response.ok) {
@@ -83,6 +82,15 @@ window.submitForm = async function(form) {
         form.reset();
         document.getElementById('attachmentList').innerHTML = '';
         
+        // Reset textareas
+        ['tbody', 'htmlB', 'mdB'].forEach(id => {
+            const textarea = document.getElementById(id);
+            if (textarea) {
+                textarea.value = '';
+                adjustTextareaHeight(id);
+            }
+        });
+        
         // Show success message
         showAlert('success', 'Email sent successfully! 🎉');
         console.log('Email sent:', result);
@@ -91,7 +99,6 @@ window.submitForm = async function(form) {
         showAlert('danger', `Failed to send email: ${error.message}`);
     } finally {
         isSubmitting = false;
-        const sendButton = document.getElementById('sendButton');
         sendButton.disabled = false;
         sendButton.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Send';
         console.log('Submission complete');
