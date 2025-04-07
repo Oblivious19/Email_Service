@@ -2,11 +2,11 @@
   "name": "managed-email-service",
   "version": "1.0.0",
   "description": "A modern email service management application",
-  "main": "app.js",
+  "main": "src/app.js",
   "type": "module",
   "scripts": {
-    "start": "node app.js",
-    "dev": "nodemon app.js",
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js",
     "vercel-build": "echo 'Building for Vercel deployment'",
     "check-env": "node check-env.js"
   },
