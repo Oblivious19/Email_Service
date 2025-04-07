@@ -4,8 +4,7 @@ services:
     env: node
     buildCommand: |
       npm ci
-      chmod +x start.sh
-      echo "Build completed successfully"
+      echo "✅ Build complete"
     startCommand: node app.js
     envVars:
       - key: NODE_ENV
@@ -22,7 +21,3 @@ services:
       - path: /*
         name: Access-Control-Allow-Origin
         value: "*"
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /
