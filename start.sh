@@ -1,28 +1,34 @@
 #!/bin/bash
 
+# Exit on any error
+set -e
+
 echo "Starting deployment script..."
+echo "Current directory: $(pwd)"
+echo "Node version: $(node --version)"
+echo "NPM version: $(npm --version)"
 
-# Run the debug script
-echo "Running debug script..."
-node src/debug.js
-
-# Try to run the main application
-echo "Attempting to run the main application..."
-if [ -f "src/app.js" ]; then
-  echo "Found app.js in src directory, running it..."
-  node src/app.js
-elif [ -f "app.js" ]; then
-  echo "Found app.js in root directory, running it..."
-  node app.js
-else
-  echo "Could not find app.js in either src or root directory."
-  echo "Listing files in current directory:"
+# Ensure src directory exists
+if [ ! -d "src" ]; then
+  echo "Error: src directory not found"
+  echo "Contents of current directory:"
   ls -la
-  echo "Listing files in src directory (if it exists):"
-  if [ -d "src" ]; then
-    ls -la src
-  else
-    echo "src directory does not exist."
-  fi
   exit 1
-fi 
+fi
+
+# Ensure app.js exists in src
+if [ ! -f "src/app.js" ]; then
+  echo "Error: src/app.js not found"
+  echo "Contents of src directory:"
+  ls -la src
+  exit 1
+fi
+
+# Ensure required environment variables are set
+if [ -z "$NODE_ENV" ]; then
+  echo "Warning: NODE_ENV not set, defaulting to production"
+  export NODE_ENV=production
+fi
+
+echo "Starting application from src/app.js..."
+exec node src/app.js 

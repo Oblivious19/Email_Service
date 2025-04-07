@@ -2,7 +2,10 @@ services:
   - type: web
     name: email-service
     env: node
-    buildCommand: npm install && chmod +x start.sh
+    buildCommand: |
+      npm ci
+      chmod +x start.sh
+      echo "Build completed successfully"
     startCommand: ./start.sh
     envVars:
       - key: NODE_ENV
