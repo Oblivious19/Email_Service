@@ -22,10 +22,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Get base URL for API calls
 const getBaseUrl = () => {
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    const hostname = window.location.hostname;
+    console.log('Current hostname:', hostname);
+    
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
         return '';
     }
-    return 'https://email-service-mauve-ten.vercel.app';
+    // Use the current origin for production
+    return window.location.origin;
 };
 
 // Make submitForm globally accessible
@@ -60,15 +64,21 @@ window.submitForm = async function(form) {
         // Update the form data with the active content
         formData.set('tbody', activeContent);
         
-        console.log('Submitting form with data:', {
+        const baseUrl = getBaseUrl();
+        const submitUrl = `${baseUrl}/submit`;
+        
+        console.log('Form submission details:', {
             to: formData.get('to'),
             subject: formData.get('subject'),
             hasContent: !!formData.get('tbody'),
             attachments: formData.getAll('attachments').length,
-            baseUrl: getBaseUrl()
+            baseUrl: baseUrl,
+            submitUrl: submitUrl,
+            hostname: window.location.hostname,
+            origin: window.location.origin
         });
 
-        const response = await fetch(`${getBaseUrl()}/submit`, {
+        const response = await fetch(submitUrl, {
             method: 'POST',
             body: formData,
             headers: {
@@ -76,11 +86,16 @@ window.submitForm = async function(form) {
             }
         });
 
+        console.log('Server response status:', response.status);
+        console.log('Server response headers:', Object.fromEntries(response.headers.entries()));
+
         let result;
         const text = await response.text();
+        console.log('Raw server response:', text);
         
         try {
             result = JSON.parse(text);
+            console.log('Parsed server response:', result);
         } catch (e) {
             console.error('Failed to parse response as JSON:', text);
             throw new Error('The server returned an invalid response. Please try again.');
