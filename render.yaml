@@ -2,10 +2,11 @@ services:
   - type: web
     name: email-service
     env: node
+    nodeVersion: 18.17.0
     buildCommand: |
       npm cache clean --force
       rm -rf node_modules package-lock.json
-      npm install --legacy-peer-deps
+      npm install
       echo "✅ Build complete"
     startCommand: node app.js
     envVars:
@@ -23,3 +24,7 @@ services:
       - path: /*
         name: Access-Control-Allow-Origin
         value: "*"
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /
