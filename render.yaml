@@ -2,14 +2,10 @@ services:
   - type: web
     name: email-service
     env: node
-    nodeVersion: 18.17.0
     buildCommand: |
-      export NVM_DIR="$HOME/.nvm"
-      [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-      nvm use 18.17.0
       npm cache clean --force
       rm -rf node_modules package-lock.json
-      npm install --production
+      npm install --legacy-peer-deps
       echo "✅ Build complete"
     startCommand: node app.js
     envVars:
