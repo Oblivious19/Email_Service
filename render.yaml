@@ -3,7 +3,7 @@ services:
     name: email-service
     env: node
     buildCommand: npm install
-    startCommand: node app.js
+    startCommand: node src/app.js
     envVars:
       - key: NODE_ENV
         value: production
@@ -22,4 +22,4 @@ services:
     routes:
       - type: rewrite
         source: /*
-        destination: / 
+        destination: /
