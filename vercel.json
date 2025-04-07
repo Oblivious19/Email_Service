@@ -14,11 +14,15 @@
     {
       "src": "/submit",
       "methods": ["POST", "OPTIONS"],
-      "dest": "app.js"
+      "dest": "/app.js"
     },
     {
       "src": "/api/(.*)",
-      "dest": "app.js"
+      "dest": "/app.js"
+    },
+    {
+      "src": "/favicon.ico",
+      "dest": "/public/favicon.ico"
     },
     {
       "handle": "filesystem"

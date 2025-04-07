@@ -29,31 +29,22 @@ const storage = multer.memoryStorage();
 const upload = multer({ 
   storage: storage,
   limits: {
-    fileSize: 5 * 1024 * 1024, // Reduce to 5MB limit for serverless
-    files: 3 // Maximum 3 files for serverless
+    fileSize: 5 * 1024 * 1024, // 5MB limit for serverless
+    files: 3 // Maximum 3 files
   }
-}).array('attachments', 3); // Pre-configure for attachments field
+}).array('attachments', 3);
 
 // Create Express app
 const app = express();
 
-// CORS configuration with more specific options
-const corsOptions = {
-  origin: '*',
-  methods: ['POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type'],
-  credentials: true
-};
+// CORS configuration
+app.use(cors());
 
-// Middleware
-app.use(cors(corsOptions));
+// Body parsing middleware
 app.use(express.json({ limit: '5mb' }));
 app.use(express.urlencoded({ extended: true, limit: '5mb' }));
 
-// Add OPTIONS handler for preflight requests
-app.options('/submit', cors(corsOptions));
-
-// API health check endpoint
+// Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'healthy',
@@ -116,10 +107,7 @@ app.use((err, req, res, next) => {
 
 // For local development
 if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
-  // Serve static files in development
   app.use(express.static(path.join(__dirname, 'public')));
-  
-  // Serve index.html for root path in development
   app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
   });
@@ -130,5 +118,4 @@ if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
   });
 }
 
-// Export the Express app
 export default app;
