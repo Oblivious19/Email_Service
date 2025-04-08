@@ -74,46 +74,17 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         try {
-            // Prepare the submission URL
-            const baseUrl = '';
-            const submitUrl = '/submit';
-            const hostname = window.location.hostname;
-            const origin = window.location.origin;
-            
             // Log form submission details
             console.log('Form submission details:', {
                 to,
                 subject,
                 hasContent: !!message,
                 attachments: attachments.length,
-                baseUrl,
-                submitUrl,
-                hostname,
-                origin
+                hostname: window.location.hostname,
+                origin: window.location.origin
             });
             
             // Submit the form
-            const response = await submitForm(formData);
-            
-            if (response.success) {
-                showStatus('Email sent successfully!');
-                emailForm.reset();
-            } else {
-                showStatus(`Error: ${response.message || 'Unknown error'}`, true);
-            }
-        } catch (error) {
-            showStatus(`Error: ${error.message || 'Unknown error'}`, true);
-        } finally {
-            sendButton.disabled = false;
-            sendButton.textContent = 'Send Email';
-        }
-    }
-    
-    // Submit form to the server
-    async function submitForm(formData) {
-        console.log('XHRPOST');
-        
-        try {
             const response = await fetch('/submit', {
                 method: 'POST',
                 body: formData
@@ -130,18 +101,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log('Parsed server response:', data);
             } catch (e) {
                 console.error('Failed to parse response as JSON:', e);
-                return { success: false, message: 'Invalid server response' };
+                showStatus('Invalid server response', true);
+                return;
             }
             
             if (!response.ok) {
                 throw new Error(data.message || 'Server error');
             }
             
-            return { success: true, ...data };
+            showStatus('Email sent successfully!');
+            emailForm.reset();
         } catch (error) {
             console.error('Form submission error:', error);
-            throw error;
+            showStatus(`Error: ${error.message || 'Unknown error'}`, true);
         } finally {
+            sendButton.disabled = false;
+            sendButton.textContent = 'Send Email';
             console.log('Submission complete');
         }
     }
