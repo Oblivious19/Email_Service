@@ -8,36 +8,64 @@ export const storage = multer.memoryStorage();
 export const upload = multer({ storage: storage });
 
 // For Vercel serverless environment, lazily create the transporters only when needed
-let _transporter = null;
+let _gmailTransporter = null;
 let _sendGridTransporter = null;
 let _mailgunTransporter = null;
+let _etherealTransporter = null;
 
 export function initializeEmailService() {
   console.log('Initializing email service with config:', {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS ? '***' : undefined
+    gmail: process.env.SMTP_USER ? '✓' : '✗',
+    sendgrid: process.env.SENDGRID_API_KEY ? '✓' : '✗',
+    mailgun: process.env.MAILGUN_API_KEY ? '✓' : '✗',
+    ethereal: '✓ (Always available)'
   });
   
-  // Create the transporter
-  getTransporter();
+  // Initialize transporters (they will be created when needed)
+  getTransporter('gmail');
+}
+
+// Get the appropriate transporter based on provider
+export async function getTransporter(provider = 'gmail') {
+  console.log(`Requested email provider: ${provider}`);
+  
+  switch (provider.toLowerCase()) {
+    case 'sendgrid':
+      return await getSendGridTransporter();
+    case 'mailgun':
+      return await getMailgunTransporter();
+    case 'ethereal':
+      return await getEtherealTransporter();
+    case 'gmail':
+    default:
+      return await getGmailTransporter();
+  }
 }
 
 // Create a Gmail transporter
-export async function getTransporter() {
-  if (!_transporter) {
+export async function getGmailTransporter() {
+  if (!_gmailTransporter) {
     // Log environment status
-    console.log('Email Service Environment:', {
+    console.log('Gmail Service Environment:', {
       isVercel: process.env.VERCEL === '1',
       nodeEnv: process.env.NODE_ENV,
       hasSMTPUser: !!process.env.SMTP_USER,
       hasSMTPPass: !!process.env.SMTP_PASS
     });
+    
+    // Debug: Show credentials (partial)
+    if (process.env.SMTP_USER) {
+      console.log(`Gmail User (first 4 chars): ${process.env.SMTP_USER.substring(0, 4)}...`);
+    }
+    if (process.env.SMTP_PASS) {
+      console.log(`Gmail Pass (length): ${process.env.SMTP_PASS.length} characters`);
+    }
 
     // Check if we should use mock
     if (process.env.USE_MOCK_TRANSPORT === 'true') {
       console.log('Using mock transport (explicitly set in environment)');
-      _transporter = createMockTransport();
-      return _transporter;
+      _gmailTransporter = createMockTransport('gmail');
+      return _gmailTransporter;
     }
     
     // Create real transporter
@@ -45,21 +73,38 @@ export async function getTransporter() {
     const smtpPass = process.env.SMTP_PASS?.trim();
     
     if (!smtpUser || !smtpPass) {
-      console.warn('Missing SMTP credentials:', {
+      console.warn('Missing Gmail SMTP credentials:', {
         hasUser: !!smtpUser,
         hasPass: !!smtpPass
       });
       console.log('Falling back to mock transport due to missing credentials');
-      _transporter = createMockTransport();
-      return _transporter;
+      _gmailTransporter = createMockTransport('gmail');
+      return _gmailTransporter;
     }
     
     console.log('Creating Gmail transport for:', smtpUser);
     
-    _transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 587,
-      secure: false,
+    // Display full transport configuration (without showing password)
+    const transportConfig = {
+      host: process.env.SMTP_HOST || 'smtp.gmail.com',
+      port: parseInt(process.env.SMTP_PORT || '587', 10),
+      secure: process.env.SMTP_SECURE === 'true',
+      auth: {
+        user: smtpUser,
+        pass: '***HIDDEN***'
+      },
+      tls: {
+        rejectUnauthorized: true,
+        minVersion: "TLSv1.2"
+      }
+    };
+    
+    console.log('Gmail transport configuration:', transportConfig);
+    
+    _gmailTransporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST || 'smtp.gmail.com',
+      port: parseInt(process.env.SMTP_PORT || '587', 10),
+      secure: process.env.SMTP_SECURE === 'true',
       auth: {
         user: smtpUser,
         pass: smtpPass
@@ -72,100 +117,212 @@ export async function getTransporter() {
 
     // Verify connection configuration
     try {
-      await _transporter.verify();
-      console.log('✓ SMTP connection verified successfully');
+      console.log('Verifying Gmail SMTP connection...');
+      await _gmailTransporter.verify();
+      console.log('✓ Gmail SMTP connection verified successfully');
     } catch (error) {
-      console.error('SMTP Verification Error:', {
+      console.error('Gmail SMTP Verification Error:', {
+        code: error.code,
+        command: error.command,
+        response: error.response,
+        responseCode: error.responseCode,
+        message: error.message
+      });
+      console.log('Falling back to mock transport due to Gmail SMTP verification failure');
+      _gmailTransporter = createMockTransport('gmail');
+    }
+  }
+  
+  return _gmailTransporter;
+}
+
+// Get Ethereal transporter (for testing)
+export async function getEtherealTransporter() {
+  if (!_etherealTransporter) {
+    // Log environment status
+    console.log('Ethereal Test Email Service Environment:', {
+      isVercel: process.env.VERCEL === '1',
+      nodeEnv: process.env.NODE_ENV
+    });
+
+    console.log('Creating Ethereal test account transport');
+    
+    // Using static credentials (note: in a real app, you'd create a new account with nodemailer.createTestAccount())
+    const etherealUser = 'colin.schroeder74@ethereal.email';
+    const etherealPass = '5bFmCwhK6F77dFx9dv';
+    
+    try {
+      _etherealTransporter = nodemailer.createTransport({
+        host: 'smtp.ethereal.email',
+        port: 587,
+        secure: false,
+        auth: {
+          user: etherealUser,
+          pass: etherealPass
+        }
+      });
+      
+      // Verify connection configuration
+      console.log('Verifying Ethereal SMTP connection...');
+      await _etherealTransporter.verify();
+      console.log('✓ Ethereal SMTP connection verified successfully');
+      
+      // Add a custom flag to mark this as Ethereal
+      _etherealTransporter.options = { 
+        ..._etherealTransporter.options,
+        isEthereal: true
+      };
+      
+      // Add message explaining how to view emails
+      console.log('📧 Ethereal Email configured. Messages will be catchable at:');
+      console.log(`   https://ethereal.email/login (login with ${etherealUser})`);
+    } catch (error) {
+      console.error('Ethereal SMTP Verification Error:', {
+        code: error.code,
+        message: error.message
+      });
+      console.log('Falling back to mock transport due to Ethereal SMTP failure');
+      _etherealTransporter = createMockTransport('ethereal');
+    }
+  }
+  
+  return _etherealTransporter;
+}
+
+// Get SendGrid transporter
+export async function getSendGridTransporter() {
+  if (!_sendGridTransporter) {
+    // Log environment status
+    console.log('SendGrid Service Environment:', {
+      isVercel: process.env.VERCEL === '1',
+      nodeEnv: process.env.NODE_ENV,
+      hasSendGridKey: !!process.env.SENDGRID_API_KEY
+    });
+
+    // Check if we should use mock
+    if (process.env.USE_MOCK_TRANSPORT === 'true') {
+      console.log('Using mock transport for SendGrid (explicitly set in environment)');
+      _sendGridTransporter = createMockTransport('sendgrid');
+      return _sendGridTransporter;
+    }
+    
+    // Check if the API key is the placeholder or missing
+    const apiKey = process.env.SENDGRID_API_KEY?.trim();
+    const isPlaceholderKey = !apiKey || apiKey === 'SG.yourApiKeyHere' || apiKey === 'your-sendgrid-api-key' || apiKey === 'your_sendgrid_api_key_here';
+    
+    if (isPlaceholderKey) {
+      console.log('Using mock transport instead of SendGrid (missing valid API key)');
+      _sendGridTransporter = createCredentialsUnavailableTransport('sendgrid');
+      return _sendGridTransporter;
+    }
+    
+    console.log('Creating SendGrid transport');
+    
+    _sendGridTransporter = nodemailer.createTransport({
+      host: 'smtp.sendgrid.net',
+      port: 587,
+      secure: false,
+      auth: {
+        user: 'apikey', // SendGrid requires 'apikey' as the username
+        pass: apiKey, // Use the API key from environment variables
+      },
+      // These settings help ensure the email shows as sent from SendGrid
+      tls: {
+        rejectUnauthorized: false
+      }
+    });
+
+    // Verify connection configuration
+    try {
+      await _sendGridTransporter.verify();
+      console.log('✓ SendGrid SMTP connection verified successfully');
+    } catch (error) {
+      console.error('SendGrid SMTP Verification Error:', {
         code: error.code,
         command: error.command,
         response: error.response,
         responseCode: error.responseCode
       });
-      console.log('Falling back to mock transport due to SMTP verification failure');
-      _transporter = createMockTransport();
+      console.log('Falling back to mock transport due to SendGrid verification failure');
+      _sendGridTransporter = createCredentialsUnavailableTransport('sendgrid');
     }
   }
   
-  return _transporter;
+  return _sendGridTransporter;
 }
 
-// Export the transporter initialization function
-export const initializeTransporter = async () => {
-  try {
-    const transport = await getTransporter();
-    console.log('Email transport initialized successfully:', {
-      type: transport.options?.mock ? 'mock' : 'gmail'
+// Get Mailgun transporter
+export async function getMailgunTransporter() {
+  if (!_mailgunTransporter) {
+    // Log environment status
+    console.log('Mailgun Service Environment:', {
+      isVercel: process.env.VERCEL === '1',
+      nodeEnv: process.env.NODE_ENV,
+      hasMailgunUser: !!process.env.MAILGUN_USER,
+      hasMailgunKey: !!process.env.MAILGUN_API_KEY
     });
-    return transport;
-  } catch (error) {
-    console.error('Failed to initialize email transport:', error);
-    throw error;
-  }
-};
 
-// Create SendGrid transporter
-export function createSendGridTransport() {
-  console.log('Creating SendGrid transporter');
-  
-  // Check if the API key is the placeholder or missing
-  const apiKey = process.env.SENDGRID_API_KEY || 'SG.yourApiKeyHere';
-  const isPlaceholderKey = apiKey === 'SG.yourApiKeyHere' || apiKey === 'your-sendgrid-api-key';
-  
-  if (isPlaceholderKey) {
-    console.log('Using mock transport instead of SendGrid (missing valid API key)');
-    return createMockTransport();
-  }
-  
-  return nodemailer.createTransport({
-    host: 'smtp.sendgrid.net',
-    port: 587,
-    secure: false,
-    auth: {
-      user: 'apikey', // SendGrid requires 'apikey' as the username
-      pass: apiKey, // Use the API key from environment variables
-    },
-    // These settings help ensure the email shows as sent from SendGrid
-    tls: {
-      rejectUnauthorized: false
+    // Check if we should use mock
+    if (process.env.USE_MOCK_TRANSPORT === 'true') {
+      console.log('Using mock transport for Mailgun (explicitly set in environment)');
+      _mailgunTransporter = createMockTransport('mailgun');
+      return _mailgunTransporter;
     }
-  });
-}
+    
+    // Check if API key is the placeholder or missing
+    const apiKey = process.env.MAILGUN_API_KEY?.trim();
+    const username = process.env.MAILGUN_USER?.trim();
+    const isPlaceholderKey = !apiKey || apiKey === 'your-mailgun-password' || apiKey === 'your-mailgun-api-key' || apiKey === 'your_mailgun_api_key_here';
+    const isPlaceholderUser = !username || username === 'postmaster@your-domain.mailgun.org' || username === 'your_mailgun_user_here';
+    
+    if (isPlaceholderKey || isPlaceholderUser) {
+      console.log('Using credentials unavailable transport instead of Mailgun (missing valid credentials)');
+      _mailgunTransporter = createCredentialsUnavailableTransport('mailgun');
+      return _mailgunTransporter;
+    }
+    
+    console.log('Creating Mailgun transport');
+    
+    _mailgunTransporter = nodemailer.createTransport({
+      host: 'smtp.mailgun.org',
+      port: 587,
+      secure: false,
+      auth: {
+        user: username,
+        pass: apiKey
+      },
+      // These settings help ensure the email shows as sent from Mailgun
+      tls: {
+        rejectUnauthorized: false
+      }
+    });
 
-// Create Mailgun transporter
-export function createMailgunTransport() {
-  console.log('Creating Mailgun transporter');
-  
-  // Check if API key is the placeholder or missing
-  const apiKey = process.env.MAILGUN_API_KEY || 'your-mailgun-password';
-  const isPlaceholderKey = apiKey === 'your-mailgun-password' || apiKey === 'your-mailgun-api-key';
-  
-  if (isPlaceholderKey) {
-    console.log('Using mock transport instead of Mailgun (missing valid API key)');
-    return createMockTransport();
+    // Verify connection configuration
+    try {
+      await _mailgunTransporter.verify();
+      console.log('✓ Mailgun SMTP connection verified successfully');
+    } catch (error) {
+      console.error('Mailgun SMTP Verification Error:', {
+        code: error.code,
+        command: error.command,
+        response: error.response,
+        responseCode: error.responseCode
+      });
+      console.log('Falling back to mock transport due to Mailgun verification failure');
+      _mailgunTransporter = createCredentialsUnavailableTransport('mailgun');
+    }
   }
   
-  return nodemailer.createTransport({
-    host: 'smtp.mailgun.org',
-    port: 587,
-    secure: false,
-    auth: {
-      user: process.env.MAILGUN_USER || 'postmaster@your-domain.mailgun.org', // would use actual username in production
-      pass: apiKey, // Use the API key from environment variables
-    },
-    // These settings help ensure the email shows as sent from Mailgun
-    tls: {
-      rejectUnauthorized: false
-    }
-  });
+  return _mailgunTransporter;
 }
 
 // Create a mock email transporter for testing
-export function createMockTransport() {
-  console.log('Creating mock transport for testing');
+export function createMockTransport(provider = 'email') {
+  console.log(`Creating mock transport for ${provider} testing`);
   return {
     sendMail: (mailOptions) => {
       return new Promise((resolve) => {
-        console.log('🔵 MOCK EMAIL SENT');
+        console.log(`🔵 MOCK ${provider.toUpperCase()} EMAIL SENT`);
         console.log('===================');
         console.log('From:', mailOptions.from);
         console.log('To:', mailOptions.to);
@@ -177,50 +334,106 @@ export function createMockTransport() {
         console.log('===================');
         
         resolve({
-          messageId: `mock-email-${Date.now()}@localhost`,
+          messageId: `mock-${provider}-${Date.now()}@localhost`,
           envelope: { from: mailOptions.from, to: mailOptions.to },
           accepted: [mailOptions.to],
           rejected: [],
           pending: [],
-          response: 'Mock email sent successfully'
+          response: `Mock ${provider} email sent successfully`
         });
       });
     },
     verify: () => Promise.resolve(true),
-    options: { mock: true }
+    options: { mock: true, provider }
   };
 }
 
-// Send email function with improved error handling
-export async function sendEmail(mailOptions) {
+// Create a transporter that returns "Credentials not available" message
+export function createCredentialsUnavailableTransport(provider = 'email') {
+  console.log(`Creating credentials unavailable transport for ${provider}`);
+  return {
+    sendMail: (mailOptions) => {
+      return new Promise((resolve) => {
+        console.log(`⚠️ ${provider.toUpperCase()} CREDENTIALS NOT AVAILABLE`);
+        console.log('===================');
+        console.log('From:', mailOptions.from);
+        console.log('To:', mailOptions.to);
+        console.log('Subject:', mailOptions.subject);
+        console.log('Content:', mailOptions.text || mailOptions.html);
+        console.log('===================');
+        console.log(`NOTE: ${provider} needs valid credentials to work. Using placeholder for now.`);
+        
+        resolve({
+          messageId: `unavailable-${provider}-${Date.now()}@localhost`,
+          envelope: { from: mailOptions.from, to: mailOptions.to },
+          accepted: [mailOptions.to],
+          rejected: [],
+          pending: [],
+          response: `${provider} email not sent: Credentials not available, please configure later`
+        });
+      });
+    },
+    verify: () => Promise.resolve(true),
+    options: { mock: true, provider, credentialsUnavailable: true }
+  };
+}
+
+// Send email function with improved error handling and provider selection
+export async function sendEmail(mailOptions, provider = 'gmail') {
   try {
-    // Initialize or get the transport on each request
-    const transport = await getTransporter();
+    // Initialize or get the transport on each request based on provider
+    const transport = await getTransporter(provider);
     
     if (!transport) {
-      throw new Error('Email transport not initialized');
+      throw new Error(`Email transport for ${provider} not initialized`);
     }
 
-    console.log('Sending email with:', {
+    // Special handling for Ethereal
+    if (transport.options?.isEthereal) {
+      // Always set from address for Ethereal if not set
+      if (!mailOptions.from) {
+        mailOptions.from = 'colin.schroeder74@ethereal.email';
+      }
+    }
+    
+    // Handle credentials unavailable case
+    if (transport.options?.credentialsUnavailable) {
+      console.log(`${provider} credentials not available, sending simulated response`);
+      const info = await transport.sendMail(mailOptions);
+      return { 
+        ...info,
+        credentialsUnavailable: true,
+        message: `${provider} provider needs configuration. Please add valid credentials to use this service.`
+      };
+    }
+
+    console.log(`Sending email with ${provider}:`, {
       from: mailOptions.from,
       to: mailOptions.to,
       subject: mailOptions.subject,
       hasAttachments: !!mailOptions.attachments,
-      transportType: transport.options?.mock ? 'mock' : 'gmail'
+      transportType: transport.options?.mock ? `mock-${provider}` : provider
     });
 
     const info = await transport.sendMail(mailOptions);
     
-    console.log('Email sent successfully:', {
+    // Special handling for Ethereal to provide the email preview URL
+    if (transport.options?.isEthereal && info.messageId) {
+      console.log(`✓ Ethereal test email sent. View it here: https://ethereal.email/message/${info.messageId}`);
+      info.previewUrl = `https://ethereal.email/message/${info.messageId}`;
+    }
+    
+    console.log(`Email sent successfully via ${provider}:`, {
       messageId: info.messageId,
       response: info.response,
       accepted: info.accepted,
-      rejected: info.rejected
+      rejected: info.rejected,
+      previewUrl: info.previewUrl || 'N/A'
     });
 
     return info;
   } catch (error) {
-    console.error('Error in sendEmail:', {
+    console.error(`Error in sendEmail with ${provider}:`, {
       code: error.code,
       message: error.message,
       command: error.command,
@@ -228,12 +441,4 @@ export async function sendEmail(mailOptions) {
     });
     throw error;
   }
-}
-
-// Initialize the service immediately
-try {
-  console.log('Initializing email service during module load');
-  initializeEmailService();
-} catch (error) {
-  console.error('Failed to initialize email service during module load:', error);
 }

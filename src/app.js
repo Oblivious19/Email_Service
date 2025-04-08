@@ -12,13 +12,34 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Load environment variables first
+console.log('⏳ Loading environment variables...');
 dotenv.config();
+console.log('✓ Environment variables loaded');
+
+// Debug: Check if Gmail credentials exist
+console.log('🔍 Gmail SMTP credentials check:');
+console.log('- SMTP_HOST:', process.env.SMTP_HOST || 'not set');
+console.log('- SMTP_PORT:', process.env.SMTP_PORT || 'not set');
+console.log('- SMTP_USER:', process.env.SMTP_USER ? '✓ set' : '❌ not set');
+console.log('- SMTP_PASS:', process.env.SMTP_PASS ? '✓ set' : '❌ not set');
+console.log('- USE_MOCK_TRANSPORT:', process.env.USE_MOCK_TRANSPORT);
 
 // Set default environment variables for development
 if (process.env.NODE_ENV !== 'production') {
+  // Gmail setup check
   if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-    console.log('⚠️ SMTP credentials not found in environment, using mock transport');
+    console.log('⚠️ Gmail SMTP credentials not found in environment, using mock transport');
     process.env.USE_MOCK_TRANSPORT = 'true';
+  }
+  
+  // SendGrid setup check
+  if (!process.env.SENDGRID_API_KEY) {
+    console.log('⚠️ SendGrid API key not found in environment');
+  }
+  
+  // Mailgun setup check
+  if (!process.env.MAILGUN_API_KEY || !process.env.MAILGUN_USER) {
+    console.log('⚠️ Mailgun credentials not found in environment');
   }
   
   // Ensure required variables have default values
@@ -37,10 +58,22 @@ try {
 
 // Log environment variables for debugging
 console.log('Environment variables loaded:', {
+  // Gmail config
   SMTP_HOST: process.env.SMTP_HOST,
   SMTP_PORT: process.env.SMTP_PORT,
   SMTP_USER: process.env.SMTP_USER ? '✓' : '✗',
   SMTP_PASS: process.env.SMTP_PASS ? '✓' : '✗',
+  
+  // SendGrid config
+  SENDGRID_API_KEY: process.env.SENDGRID_API_KEY ? '✓' : '✗',
+  SENDGRID_FROM_EMAIL: process.env.SENDGRID_FROM_EMAIL || '(using SMTP_USER)',
+  
+  // Mailgun config
+  MAILGUN_API_KEY: process.env.MAILGUN_API_KEY ? '✓' : '✗',
+  MAILGUN_USER: process.env.MAILGUN_USER ? '✓' : '✗',
+  MAILGUN_FROM_EMAIL: process.env.MAILGUN_FROM_EMAIL || '(using MAILGUN_USER)',
+  
+  // General config
   USE_ENV_VARS: process.env.USE_ENV_VARS,
   USE_MOCK_TRANSPORT: process.env.USE_MOCK_TRANSPORT,
   NODE_ENV: process.env.NODE_ENV,

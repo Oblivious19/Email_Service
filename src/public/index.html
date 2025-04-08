@@ -1,83 +1,297 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Managed Email Service</title>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https://stackpath.bootstrapcdn.com https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com https://use.fontawesome.com data:; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com;"
+    />
+    <title>Email Composer</title>
+    <link
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <!-- Google Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="style.css" />
     <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
     <meta
       name="description"
-      content="A modern email service management application"
+      content="A modern email service with multiple provider support"
     />
+    <meta name="theme-color" content="#121212" />
+
+    <!-- Scripts -->
+    <script src="script.js" defer></script>
+    <script>
+      // Move these functions to script.js
+      document.addEventListener("DOMContentLoaded", function () {
+        // Format tabs functionality
+        const formatTabs = document.querySelectorAll(".format-tab");
+        const emailBody = document.getElementById("emailBody");
+
+        formatTabs.forEach((tab) => {
+          tab.addEventListener("click", function () {
+            formatTabs.forEach((t) => t.classList.remove("active"));
+            this.classList.add("active");
+
+            const format = this.getAttribute("data-format");
+            switch (format) {
+              case "text":
+                emailBody.placeholder = "Write your plain text content here...";
+                break;
+              case "html":
+                emailBody.placeholder = "Write your HTML content here...";
+                break;
+              case "markdown":
+                emailBody.placeholder = "Write your Markdown content here...";
+                break;
+            }
+          });
+        });
+      });
+    </script>
   </head>
   <body>
-    <div class="container">
-      <header>
-        <h1>Managed Email Service</h1>
-        <p class="subtitle">Send emails securely and reliably</p>
-      </header>
+    <!-- Loader Container -->
+    <div class="loader-container" id="mainLoader">
+      <div class="dots-loader">
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
+      <div class="loading-text">Loading...</div>
+    </div>
 
-      <main>
-        <section class="email-form">
-          <h2>Send an Email</h2>
+    <!-- Progress Loader (for file uploads) -->
+    <div class="loader-container" id="uploadLoader">
+      <div class="progress-loader"></div>
+      <div class="loading-text">Uploading files...</div>
+    </div>
+
+    <!-- Spinner Loader (for email sending) -->
+    <div class="loader-container" id="sendingLoader">
+      <div class="spinner-loader"></div>
+      <div class="loading-text">Sending email...</div>
+    </div>
+
+    <!-- GitHub Link -->
+    <a
+      href="https://github.com/Oblivious19/Email_Service"
+      target="_blank"
+      class="github-link"
+      title="View on GitHub"
+    >
+      <svg
+        height="32"
+        aria-hidden="true"
+        viewBox="0 0 16 16"
+        version="1.1"
+        width="32"
+        data-view-component="true"
+        class="octicon octicon-mark-github"
+      >
+        <path
+          fill="white"
+          d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"
+        ></path>
+      </svg>
+    </a>
+
+    <div class="app-container">
+      <div class="main-content">
+        <!-- Header -->
+        <div class="page-header">
+          <h1>
+            <span class="highlight">Email</span> Management
+            <span class="highlight">System</span>
+          </h1>
+          <div class="service-description">
+            A powerful email management system that supports multiple providers.
+            Send emails through Gmail, SendGrid, or Mailgun. Create and send
+            professional emails with HTML formatting, markdown support, and
+            real-time preview.
+          </div>
+        </div>
+
+        <!-- Provider Cards -->
+        <div class="provider-cards">
+          <!-- Gmail Card -->
+          <div class="provider-card active">
+            <div class="provider-header">
+              <span class="provider-name">
+                <i class="fab fa-google"></i> Gmail
+              </span>
+              <span class="provider-status status-active">Active</span>
+            </div>
+            <div class="provider-details">
+              <div class="provider-email">shreya.ojha1921@gmail.com</div>
+              <div class="provider-description">
+                Send emails using Gmail's SMTP server. Reliable delivery with
+                high sending limits.
+              </div>
+            </div>
+          </div>
+
+          <!-- SendGrid Card -->
+          <div class="provider-card">
+            <div class="provider-header">
+              <span class="provider-name">
+                <i class="fas fa-paper-plane"></i> SendGrid
+              </span>
+              <span class="provider-status status-inactive">Inactive</span>
+            </div>
+            <div class="provider-details">
+              <div class="provider-message">Credentials Expired</div>
+              <div class="provider-description">
+                Professional email delivery service with advanced analytics and
+                tracking features.
+              </div>
+            </div>
+          </div>
+
+          <!-- Mailgun Card -->
+          <div class="provider-card">
+            <div class="provider-header">
+              <span class="provider-name">
+                <i class="fas fa-mail-bulk"></i> Mailgun
+              </span>
+              <span class="provider-status status-inactive">Inactive</span>
+            </div>
+            <div class="provider-details">
+              <div class="provider-message">Credentials Expired</div>
+              <div class="provider-description">
+                Developer-friendly email service with powerful APIs and
+                excellent deliverability.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Email Form -->
+        <div class="form-section">
           <form id="emailForm">
-            <div class="form-group">
+            <div class="input-group">
               <label for="to">To:</label>
               <input
                 type="email"
                 id="to"
                 name="to"
-                required
+                class="form-control"
                 placeholder="recipient@example.com"
+                required
               />
             </div>
 
-            <div class="form-group">
+            <div class="input-group">
               <label for="subject">Subject:</label>
               <input
                 type="text"
                 id="subject"
                 name="subject"
-                required
+                class="form-control"
                 placeholder="Email subject"
+                required
               />
             </div>
 
-            <div class="form-group">
-              <label for="tbody">Message:</label>
+            <div class="editor-wrapper">
+              <div class="editor-toolbar">
+                <div class="format-tabs">
+                  <button type="button" class="format-tab" data-format="text">
+                    <i class="fas fa-font"></i> Text
+                  </button>
+                  <button
+                    type="button"
+                    class="format-tab active"
+                    data-format="html"
+                  >
+                    <i class="fas fa-code"></i> HTML
+                  </button>
+                  <button
+                    type="button"
+                    class="format-tab"
+                    data-format="markdown"
+                  >
+                    <i class="fab fa-markdown"></i> Markdown
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  class="btn-preview"
+                  onclick="previewEmail()"
+                >
+                  <i class="fas fa-eye"></i>Preview
+                </button>
+              </div>
               <textarea
-                id="tbody"
+                id="emailBody"
                 name="tbody"
-                rows="6"
+                placeholder="Write your email content here..."
                 required
-                placeholder="Your message here..."
               ></textarea>
             </div>
 
-            <div class="form-group">
-              <label for="attachments">Attachments:</label>
-              <input type="file" id="attachments" name="attachments" multiple />
-              <small>Max 3 files, 5MB each</small>
-            </div>
-
-            <div class="form-actions">
-              <button type="submit" id="sendButton">Send Email</button>
-              <button type="reset" class="secondary">Clear</button>
+            <div class="button-container">
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-paper-plane"></i> Send Email
+              </button>
+              <button type="button" class="btn btn-secondary">
+                <i class="fas fa-save"></i> Save Draft
+              </button>
             </div>
           </form>
-        </section>
+        </div>
 
-        <section class="status-container">
-          <div id="status" class="hidden"></div>
-        </section>
-      </main>
+        <!-- Status Message Container -->
+        <div id="status" class="mt-3"></div>
 
-      <footer>
-        <p>&copy; 2025 Managed Email Service</p>
-      </footer>
+        <!-- Preview Modal -->
+        <div id="previewWork">
+          <div class="preview-content">
+            <div class="preview-header">
+              <h3 class="preview-title">Email Preview</h3>
+              <button class="preview-close" onclick="closePreview()">
+                &times;
+              </button>
+            </div>
+            <div id="previewContent"></div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <script src="email-form.js"></script>
+    <script>
+      function previewEmail() {
+        const content = document.getElementById("emailBody").value;
+        const previewContent = document.getElementById("previewContent");
+        const previewWork = document.getElementById("previewWork");
+
+        previewContent.innerHTML = content;
+        previewWork.classList.add("show");
+      }
+
+      function closePreview() {
+        document.getElementById("previewWork").classList.remove("show");
+      }
+
+      function toggleTheme() {
+        document.body.classList.toggle("dark-theme");
+        const icon = document.querySelector(".theme-toggle i");
+        icon.classList.toggle("fa-sun");
+        icon.classList.toggle("fa-moon");
+      }
+    </script>
   </body>
 </html>
