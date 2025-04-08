@@ -45,11 +45,13 @@ export async function getTransporter() {
     const smtpPass = process.env.SMTP_PASS?.trim();
     
     if (!smtpUser || !smtpPass) {
-      console.error('Missing SMTP credentials:', {
+      console.warn('Missing SMTP credentials:', {
         hasUser: !!smtpUser,
         hasPass: !!smtpPass
       });
-      throw new Error('SMTP credentials not configured. Please check environment variables.');
+      console.log('Falling back to mock transport due to missing credentials');
+      _transporter = createMockTransport();
+      return _transporter;
     }
     
     console.log('Creating Gmail transport for:', smtpUser);
@@ -79,7 +81,8 @@ export async function getTransporter() {
         response: error.response,
         responseCode: error.responseCode
       });
-      throw new Error(`SMTP verification failed: ${error.message}`);
+      console.log('Falling back to mock transport due to SMTP verification failure');
+      _transporter = createMockTransport();
     }
   }
   

@@ -6,12 +6,26 @@ import cors from 'cors';
 import multer from 'multer';
 import { sendEmailController } from './controllers/emailController.js';
 import { initializeEmailService } from './services/Emailservice.js';
+import fs from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Load environment variables first
 dotenv.config();
+
+// Set default environment variables for development
+if (process.env.NODE_ENV !== 'production') {
+  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+    console.log('⚠️ SMTP credentials not found in environment, using mock transport');
+    process.env.USE_MOCK_TRANSPORT = 'true';
+  }
+  
+  // Ensure required variables have default values
+  process.env.SMTP_HOST = process.env.SMTP_HOST || 'smtp.gmail.com';
+  process.env.SMTP_PORT = process.env.SMTP_PORT || '587';
+  process.env.USE_ENV_VARS = process.env.USE_ENV_VARS || 'true';
+}
 
 // Initialize email service
 try {
