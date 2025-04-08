@@ -8,9 +8,9 @@ console.log('Running fix-gopd script...');
 try {
   // Run the fix script first
   require('./fix-gopd.js');
-  
+
   console.log('Starting application...');
-  
+
   // Run the actual app based on its location (either in root or src directory)
   try {
     // Try to start from src directory first
