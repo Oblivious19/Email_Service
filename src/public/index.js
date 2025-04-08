@@ -99,10 +99,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 showStatus('Email sent successfully!');
                 emailForm.reset();
             } else {
-                showStatus(`Error: ${response.message}`, true);
+                showStatus(`Error: ${response.message || 'Unknown error'}`, true);
             }
         } catch (error) {
-            showStatus(`Error: ${error.message}`, true);
+            showStatus(`Error: ${error.message || 'Unknown error'}`, true);
         } finally {
             sendButton.disabled = false;
             sendButton.textContent = 'Send Email';
@@ -116,12 +116,10 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             const response = await fetch('/submit', {
                 method: 'POST',
-                body: formData,
-                credentials: 'include'
+                body: formData
             });
             
             console.log('Server response status:', response.status);
-            console.log('Server response headers:', response.headers);
             
             const responseText = await response.text();
             console.log('Raw server response:', responseText);
