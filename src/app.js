@@ -46,6 +46,16 @@ const upload = multer({
 // Create Express app
 const app = express();
 
+// Security headers middleware
+app.use((req, res, next) => {
+  // Set proper Content-Security-Policy
+  res.setHeader(
+    'Content-Security-Policy',
+    "default-src 'self'; img-src 'self' data:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self';"
+  );
+  next();
+});
+
 // Basic CORS configuration
 app.use(cors({
   origin: true,
@@ -57,6 +67,14 @@ app.use(cors({
 // Body parsing middleware with limits
 app.use(express.json({ limit: '5mb' }));
 app.use(express.urlencoded({ extended: true, limit: '5mb' }));
+
+// Serve static files in all environments
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Root route handler
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -124,14 +142,6 @@ app.use((err, req, res, next) => {
     code: 'FUNCTION_ERROR'
   });
 });
-
-// Serve static files in development
-if (process.env.NODE_ENV !== 'production') {
-  app.use(express.static(path.join(__dirname, 'public')));
-  app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
-  });
-}
 
 // Always listen on a port when not in Vercel
 if (!process.env.VERCEL) {

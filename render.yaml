@@ -20,13 +20,16 @@ services:
       - key: SMTP_PASS
         sync: false
       - key: USE_ENV_VARS
-        value: true
+        value: "true"
       - key: USE_MOCK_TRANSPORT
-        value: false
+        value: "false"
     headers:
       - path: /*
         name: Access-Control-Allow-Origin
         value: "*"
+      - path: /*
+        name: Content-Security-Policy
+        value: "default-src 'self'; img-src 'self' data:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self';"
     routes:
       - type: rewrite
         source: /*

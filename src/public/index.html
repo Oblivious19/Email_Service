@@ -3,33 +3,81 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Email Service</title>
-    <link rel="stylesheet" href="./style.css" />
+    <title>Managed Email Service</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+    <meta
+      name="description"
+      content="A modern email service management application"
+    />
   </head>
   <body>
     <div class="container">
-      <h1>Email Service</h1>
-      <form id="email-form">
-        <div class="form-group">
-          <label for="to">To:</label>
-          <input type="email" id="to" name="to" required />
-        </div>
-        <div class="form-group">
-          <label for="subject">Subject:</label>
-          <input type="text" id="subject" name="subject" required />
-        </div>
-        <div class="form-group">
-          <label for="tbody">Message:</label>
-          <textarea id="tbody" name="tbody" rows="10" required></textarea>
-        </div>
-        <div class="form-group">
-          <label for="attachments">Attachments:</label>
-          <input type="file" id="attachments" name="attachments" multiple />
-        </div>
-        <button type="submit" id="submit-btn">Send Email</button>
-      </form>
-      <div id="result" class="hidden"></div>
+      <header>
+        <h1>Managed Email Service</h1>
+        <p class="subtitle">Send emails securely and reliably</p>
+      </header>
+
+      <main>
+        <section class="email-form">
+          <h2>Send an Email</h2>
+          <form id="emailForm">
+            <div class="form-group">
+              <label for="to">To:</label>
+              <input
+                type="email"
+                id="to"
+                name="to"
+                required
+                placeholder="recipient@example.com"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="subject">Subject:</label>
+              <input
+                type="text"
+                id="subject"
+                name="subject"
+                required
+                placeholder="Email subject"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="message">Message:</label>
+              <textarea
+                id="message"
+                name="tbody"
+                rows="6"
+                required
+                placeholder="Your message here..."
+              ></textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="attachments">Attachments:</label>
+              <input type="file" id="attachments" name="attachments" multiple />
+              <small>Max 3 files, 5MB each</small>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" id="sendButton">Send Email</button>
+              <button type="reset" class="secondary">Clear</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="status-container">
+          <div id="status" class="hidden"></div>
+        </section>
+      </main>
+
+      <footer>
+        <p>&copy; 2025 Managed Email Service</p>
+      </footer>
     </div>
-    <script src="./index.js"></script>
+
+    <script src="index.js"></script>
   </body>
 </html>

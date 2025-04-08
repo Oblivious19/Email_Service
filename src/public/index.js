@@ -18,6 +18,135 @@ document.addEventListener('DOMContentLoaded', function() {
             helpModal.show();
         });
     }
+
+    // Get form elements
+    const emailForm = document.getElementById('emailForm');
+    const statusDiv = document.getElementById('status');
+    const sendButton = document.getElementById('sendButton');
+    
+    // Detect the environment and set the API URL accordingly
+    const currentHostname = window.location.hostname;
+    console.log('Current hostname:', currentHostname);
+    
+    // Handle form submission
+    emailForm.addEventListener('submit', handleSubmit);
+    
+    // Show status message
+    function showStatus(message, isError = false) {
+        statusDiv.textContent = message;
+        statusDiv.className = isError ? 'error' : 'success';
+        statusDiv.classList.remove('hidden');
+        
+        setTimeout(() => {
+            statusDiv.classList.add('hidden');
+        }, 8000);
+    }
+    
+    // Handle form submission
+    async function handleSubmit(event) {
+        event.preventDefault();
+        
+        console.log('Handling submit');
+        
+        // Get form data
+        const formData = new FormData(emailForm);
+        const to = formData.get('to');
+        const subject = formData.get('subject');
+        const message = formData.get('tbody');
+        const attachments = document.getElementById('attachments').files;
+        
+        // Validate form
+        if (!to || !subject || !message) {
+            showStatus('Please fill out all required fields', true);
+            return;
+        }
+        
+        // Show sending status
+        sendButton.disabled = true;
+        sendButton.textContent = 'Sending...';
+        
+        // Display submit details for debugging
+        console.log({
+            to,
+            subject,
+            hasContent: !!message,
+            attachments: attachments.length
+        });
+        
+        try {
+            // Prepare the submission URL
+            const baseUrl = '';
+            const submitUrl = '/submit';
+            const hostname = window.location.hostname;
+            const origin = window.location.origin;
+            
+            // Log form submission details
+            console.log('Form submission details:', {
+                to,
+                subject,
+                hasContent: !!message,
+                attachments: attachments.length,
+                baseUrl,
+                submitUrl,
+                hostname,
+                origin
+            });
+            
+            // Submit the form
+            const response = await submitForm(formData);
+            
+            if (response.success) {
+                showStatus('Email sent successfully!');
+                emailForm.reset();
+            } else {
+                showStatus(`Error: ${response.message}`, true);
+            }
+        } catch (error) {
+            showStatus(`Error: ${error.message}`, true);
+        } finally {
+            sendButton.disabled = false;
+            sendButton.textContent = 'Send Email';
+        }
+    }
+    
+    // Submit form to the server
+    async function submitForm(formData) {
+        console.log('XHRPOST');
+        
+        try {
+            const response = await fetch('/submit', {
+                method: 'POST',
+                body: formData,
+                credentials: 'include'
+            });
+            
+            console.log('Server response status:', response.status);
+            console.log('Server response headers:', response.headers);
+            
+            const responseText = await response.text();
+            console.log('Raw server response:', responseText);
+            
+            let data;
+            try {
+                data = JSON.parse(responseText);
+                console.log('Parsed server response:', data);
+            } catch (e) {
+                console.error('Failed to parse response as JSON:', e);
+                return { success: false, message: 'Invalid server response' };
+            }
+            
+            if (!response.ok) {
+                throw new Error(data.message || 'Server error');
+            }
+            
+            return { success: true, ...data };
+        } catch (error) {
+            console.error('Form submission error:', error);
+            throw error;
+        } finally {
+            console.log('Submission complete');
+        }
+    }
 });
 
 // Get base URL for API calls
@@ -30,106 +159,6 @@ const getBaseUrl = () => {
     }
     // Use the current origin for production
     return window.location.origin;
-};
-
-// Make submitForm globally accessible
-window.submitForm = async function(form) {
-    if (isSubmitting) {
-        console.log('Form is already being submitted');
-        return;
-    }
-
-    const sendButton = document.getElementById('sendButton');
-    
-    try {
-        isSubmitting = true;
-        sendButton.disabled = true;
-        sendButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Sending...';
-
-        const formData = new FormData(form);
-        
-        // Get the active tab content
-        const activeContent = activeTab === 'text' ? document.getElementById('tbody').value :
-                            activeTab === 'html' ? document.getElementById('htmlB').value :
-                            document.getElementById('mdB').value;
-        
-        // Validate required fields
-        const to = formData.get('to');
-        const subject = formData.get('subject');
-        
-        if (!to || !subject || !activeContent) {
-            throw new Error('Please fill in all required fields (To, Subject, and Message)');
-        }
-        
-        // Update the form data with the active content
-        formData.set('tbody', activeContent);
-        
-        const baseUrl = getBaseUrl();
-        const submitUrl = `${baseUrl}/submit`;
-        
-        console.log('Form submission details:', {
-            to: formData.get('to'),
-            subject: formData.get('subject'),
-            hasContent: !!formData.get('tbody'),
-            attachments: formData.getAll('attachments').length,
-            baseUrl: baseUrl,
-            submitUrl: submitUrl,
-            hostname: window.location.hostname,
-            origin: window.location.origin
-        });
-
-        const response = await fetch(submitUrl, {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'Accept': 'application/json'
-            }
-        });
-
-        console.log('Server response status:', response.status);
-        console.log('Server response headers:', Object.fromEntries(response.headers.entries()));
-
-        let result;
-        const text = await response.text();
-        console.log('Raw server response:', text);
-        
-        try {
-            result = JSON.parse(text);
-            console.log('Parsed server response:', result);
-        } catch (e) {
-            console.error('Failed to parse response as JSON:', text);
-            throw new Error('The server returned an invalid response. Please try again.');
-        }
-
-        if (!response.ok) {
-            throw new Error(result.message || result.error || 'Failed to send email');
-        }
-
-        // Clear the form on success
-        form.reset();
-        document.getElementById('attachmentList').innerHTML = '';
-        
-        // Reset textareas
-        ['tbody', 'htmlB', 'mdB'].forEach(id => {
-            const textarea = document.getElementById(id);
-            if (textarea) {
-                textarea.value = '';
-                adjustTextareaHeight(id);
-            }
-        });
-        
-        // Show success message
-        showAlert('success', 'Email sent successfully! 🎉');
-        console.log('Email sent:', result);
-    } catch (error) {
-        console.error('Form submission error:', error);
-        showAlert('danger', `Failed to send email: ${error.message}`);
-    } finally {
-        isSubmitting = false;
-        sendButton.disabled = false;
-        sendButton.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Send';
-        console.log('Submission complete');
-    }
 };
 
 function setActiveTab(tab) {
