@@ -7,18 +7,22 @@ services:
       rm -rf node_modules package-lock.json
       npm install
       echo "✅ Build complete"
-    startCommand: node src/app.js
+    startCommand: bash start-render.sh
     envVars:
       - key: NODE_ENV
         value: production
       - key: SMTP_HOST
-        sync: false
+        value: smtp.gmail.com
       - key: SMTP_PORT
-        sync: false
+        value: 587
       - key: SMTP_USER
         sync: false
       - key: SMTP_PASS
         sync: false
+      - key: USE_ENV_VARS
+        value: true
+      - key: USE_MOCK_TRANSPORT
+        value: false
     headers:
       - path: /*
         name: Access-Control-Allow-Origin

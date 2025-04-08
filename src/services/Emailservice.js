@@ -191,6 +191,7 @@ export function createMockTransport() {
 // Send email function with improved error handling
 export async function sendEmail(mailOptions) {
   try {
+    // Initialize or get the transport on each request
     const transport = await getTransporter();
     
     if (!transport) {
@@ -224,4 +225,12 @@ export async function sendEmail(mailOptions) {
     });
     throw error;
   }
+}
+
+// Initialize the service immediately
+try {
+  console.log('Initializing email service during module load');
+  initializeEmailService();
+} catch (error) {
+  console.error('Failed to initialize email service during module load:', error);
 }
